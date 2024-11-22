@@ -6,5 +6,6 @@ router.get("/", function (req, res, next) {
   res.render("index");
 });
 
-export default router;
+console.log(test);
 
+export default router;
