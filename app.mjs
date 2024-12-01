@@ -5,16 +5,18 @@ import cors from "cors";
 import dotenv from "dotenv";
 import Serverless from "serverless-http";
 import connectToMGDB from "./connection.mjs";
-import HotelOrderRouters from "./routes/HieuRoutes/HotelOrderRouters.mjs";
-import HotelReviewsRouters from "./routes/HieuRoutes/HotelReviewsRouters.mjs";
-import PromotionsRouters from "./routes/HieuRoutes/PromotionsRouters.mjs";
-import ToursOrderRouters from "./routes/ThaiRoutes/ToursOrderRouters.mjs";
-import ToursReviewsRouters from "./routes/ThaiRoutes/ToursReviewsRouters.mjs";
-import WishlistsRouters from "./routes/ThaiRoutes/WishlistsRouters.mjs";
-import UserRouters from "./routes/HoaRoutes/UsersRouters.mjs";
-import SupportsRouters from "./routes/HoaRoutes/SupportsRouters.mjs";
-import ProductsHotelRouters from "./routes/HoaRoutes/ProductsHotelRouters.mjs";
-import ProductsToursRouters from "./routes/HoaRoutes/ProductsToursRouters.mjs";
+import HotelRouters from "./routes/HotelRouters.mjs";
+import PromotionsRouters from "./routes/PromotionsRouters.mjs";
+import TourRouters from "./routes/TourRouters.mjs";
+import ReviewsRouters from "./routes/ReviewsRouters.mjs";
+import WishlistsRouters from "./routes/WishlistsRouters.mjs";
+import UserRouters from "./routes/UsersRouters.mjs";
+import AdminRouters from "./routes/AdminRouter.mjs";
+import SupportsRouters from "./routes/SupportsRouters.mjs";
+import AuthenticationRouters from "./routes/AuthenticationRouter.mjs";
+import BookingRouters from "./routes/BookingRouter.mjs";
+import RoomRouters from "./routes/RoomRouters.mjs";
+import FlightRouters from "./routes/FlightRouters.mjs";
 
 dotenv.config();
 
@@ -22,6 +24,7 @@ const corsConfig = {
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 };
 
 const App = async () => {
@@ -36,29 +39,22 @@ const App = async () => {
     morgan(":method :url :status :res[content-length] - :response-time ms")
   );
 
-  try {
-    await connectToMGDB;
-    console.log("Connected to MongoDB successfully.");
-  } catch (error) {
-    console.error("Failed to connect to MongoDB:", error.message);
-    process.exit(1);
-  }
+  connectToMGDB();
 
-  //Hiếu
-  app.use("/", HotelOrderRouters);
-  app.use("/", HotelReviewsRouters);
+
+  app.use("/", AdminRouters);
+  app.use("/", AuthenticationRouters);
+  app.use("/", BookingRouters);
+  app.use("/", FlightRouters);
+  app.use("/", HotelRouters);
   app.use("/", PromotionsRouters);
-
-  //Hòa
-  app.use("/", UserRouters);
+  app.use("/", RoomRouters);
   app.use("/", SupportsRouters);
-  app.use("/", ProductsHotelRouters);
-  app.use("/", ProductsToursRouters);
-
-  //Thái
-  app.use("/", ToursOrderRouters);
-  app.use("/", ToursReviewsRouters);
+  app.use("/", TourRouters);
+  app.use("/", ReviewsRouters);
+  app.use("/", UserRouters);
   app.use("/", WishlistsRouters);
+
 
   app.use((err, req, res, next) => {
     console.error(err.stack);
