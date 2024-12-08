@@ -105,7 +105,7 @@ const logIn = async (req, res, next) => {
       });
     }
 
-    if (hashingPasswordLogin && checkEmail.role === "user") {
+    if (hashingPasswordLogin && checkEmail.role === "admin") {
       (checkEmail.logInAttempt = 5), (checkEmail.timeSuspended = null);
       await checkEmail.save();
 
@@ -145,7 +145,7 @@ const logIn = async (req, res, next) => {
       });
 
       return res.status(200).json({
-        message: "Log in successful!",
+        message: "Log in Admin successful!",
       });
     }
   } catch (error) {

@@ -35,13 +35,17 @@ const userShema = new mongoose.Schema(
       required: false,
       default: null,
     },
+    nationality: {
+      type: String,
+      required: false,
+      default: null,
+    },
     address: {
-      number: { type: String, default: null },
       street: { type: String, default: null },
       ward: { type: String, default: null },
       district: { type: String, default: null },
       city: { type: String, default: null },
-      zipcode: { type: String, default: null },
+      country: { type: String, default: null },
     },
     avatar: {
       type: String,
@@ -57,6 +61,16 @@ const userShema = new mongoose.Schema(
       type: String,
       enum: ["bronze", "silver", "gold", "platinum", "diamond"],
       default: "bronze",
+    },
+    currency: {
+      type: String,
+      enum: ["usd", "vnd", "euro", "yen"],
+      default: "usd",
+    },
+    language: {
+      type: String,
+      enum: ["English", "VietNam", "Japan"],
+      default: "English",
     },
     loyaltyPoints: {
       type: Number,

@@ -6,30 +6,56 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
-      default: null,
     },
-    hotelId: {
+    objectId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "hotel",
-      default: null,
+      required: true,
+      refPath: "objectType", // Động xác định liên kết
     },
-    tourId: {
+    objectType: {
+      type: String,
+      required: true,
+      enum: ["hotel", "tour", "flight"], 
+    },
+    paymentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "tour",
+      ref: "payments", 
       default: null,
     },
-    fightId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "flight",
+    bookingStartDate: {
+      type: Date,
+      required: true,
+    },
+    bookingEndDate: {
+      type: Date,
+      required: true,
+    },
+    totalPersons: {
+      type: Number,
+      required: true,
+    },
+    totalAmount: {
+      type: Number, // Nên lưu số để dễ tính toán
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "confirmed", "cancelled", "completed"],
+      default: "pending",
+    },
+    specialRequests: {
+      type: String, 
       default: null,
     },
-    objectType: { type: String, required: true, enum: ["hotel, tour"] },
-    paymentId: { type: Number, required: true },
-    bookingStartDate: { type: Date, required: true },
-    bookingEndDate: { type: Date, required: true },
-    totalPersons: { type: Number, required: true },
-    totalAmount: { type: String, required: true },
-    status: { type: String, default: null },
+    cancellationPolicy: {
+      type: String, 
+      default: null,
+    },
+    contactInfo: {
+      name: { type: String },
+      email: { type: String },
+      phone: { type: String },
+    },
   },
   { timestamps: true }
 );
