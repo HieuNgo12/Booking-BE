@@ -6,17 +6,32 @@ const paymentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "booking",
       required: true,
+      default: false,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
+      default: false,
     },
     amount: { type: Number, required: true },
+    currency: {
+      type: String,
+      required: true,
+      default: "USD",
+    },
     paymentMethod: {
       type: String,
       required: true,
-      enum: ["credit card", "cash", "paypal", "e-banking"],
+      enum: [
+        "credit card",
+        "cash",
+        "paypal",
+        "momo",
+        "zalo",
+        "vnpay",
+        "bank transfer",
+      ],
     },
     paymentDate: { type: Date, default: Date.now },
     status: {
@@ -24,7 +39,22 @@ const paymentSchema = new mongoose.Schema(
       enum: ["completed", "pending", "failed"],
       default: "pending",
     },
-    transactionId: { type: String },
+    payerDetails: {
+      name: { type: String, required: true },
+      email: { type: String },
+      phone: { type: String },
+    },
+    paymentGatewayDetails: {
+      provider: { type: String }, // Nhà cung cấp cổng thanh toán (VD: "MoMo", "VNPay")
+      transactionId: { type: String }, // Mã giao dịch từ cổng thanh toán
+    },
+    description: { type: String },
+    tax: { type: Number, default: 0 },
+    refund: {
+      isRefunded: { type: Boolean, default: false },
+      refundDate: { type: Date },
+      refundAmount: { type: Number },
+    },
   },
   { timestamps: true }
 );

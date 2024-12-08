@@ -117,9 +117,75 @@ const logIn = async (req, res, next) => {
     }
 
     if (checkEmail.verificationStatus.emailVerified === false) {
-      return res.status(400).json({
-        message: "Please verify email first!",
+      const checkOTP = await OtpModel.findOne({
+        email: email,
+        purpose: "verifyEmail",
       });
+      if (checkOTP) {
+        const mailOptions = {
+          from: "info@test.com",
+          to: email,
+          subject: "Your OTP Code",
+          text: `Otp to verify email is: ${checkOTP.otp}`,
+        };
+
+        await transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            throw new Error("Error sending email");
+          } else {
+            console.log("Email sent: " + info.response);
+            return res.status(400).json({
+              message:
+                "Please verify email first! OTP is sent! Please check your email!",
+              emailVerified: false,
+            });
+          }
+        });
+        return res.status(400).json({
+          message:
+            "Please verify email first! OTP is sent! Please check your email!",
+          emailVerified: false,
+        });
+      } else {
+        const otp = otpGenerator.generate(6, {
+          digits: true,
+          lowerCaseAlphabets: false,
+          upperCaseAlphabets: false,
+          specialChars: false,
+        });
+
+        const newOtp = await OtpModel.create({
+          email: email,
+          otp: otp,
+          purpose: "verifyEmail",
+        });
+        if (newOtp) {
+          const mailOptions = {
+            from: "info@test.com",
+            to: email,
+            subject: "Your OTP Code",
+            text: `Otp to verify email is: ${otp}`,
+          };
+
+          await transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              throw new Error("Error sending email");
+            } else {
+              console.log("Email sent: " + info.response);
+              return res.status(400).json({
+                message:
+                  "Please verify email first! OTP is sent! Please check your email!",
+                emailVerified: false,
+              });
+            }
+          });
+          return res.status(400).json({
+            message:
+              "Please verify email first! OTP is sent! Please check your email!",
+            emailVerified: false,
+          });
+        }
+      }
     }
 
     if (hashingPasswordLogin && checkEmail.role === "user") {
@@ -129,8 +195,8 @@ const logIn = async (req, res, next) => {
       const userDataAccessToken = {
         id: checkEmail._id,
         email: checkEmail.email,
-        emailVerified: checkEmail.verificationStatus.emailVerified,
-        role: checkEmail.role,
+        firstName: checkEmail.firstName,
+        lastName: checkEmail.lastName,
       };
 
       const userDataRefreshToken = {
@@ -146,18 +212,18 @@ const logIn = async (req, res, next) => {
       });
 
       res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: false,
+        httpOnly: false,
         path: "/",
-        sameSite: "None",
+        // secure: false,
+        // sameSite: "None",
         maxAge: 5 * 60 * 1000,
       });
 
       res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: false,
+        httpOnly: false,
         path: "/",
-        sameSite: "None",
+        // secure: false,
+        // sameSite: "None",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
@@ -379,6 +445,12 @@ const signUp = async (req, res, next) => {
         specialChars: false,
       });
 
+      await OtpModel.create({
+        otp: otp,
+        email: email,
+        purpose: "verifyEmail",
+      });
+
       const mailOptions = {
         from: "info@test.com",
         to: email,
@@ -554,19 +626,20 @@ const forgotPassword = async (req, res, next) => {
       });
     }
 
-    const checkResent = await OtpModel.findOne({
+    const checkOTP = await OtpModel.findOne({
       email: email,
       purpose: "resetPassword",
     });
 
     if (checkResent) {
       const currentDate = new Date();
-      if (checkResent.expiresAt > currentDate) {
+      const MAX_TIME = 5 * 60 * 1000;
+      if (currentDate - checkResent.createAt < MAX_TIME) {
         const mailOptions = {
           from: "info@test.com",
           to: email,
           subject: "Your OTP Code",
-          text: `Otp to reset password is: ${otp}`,
+          text: `Otp to reset password is: ${checkOTP.otp}`,
         };
 
         await transporter.sendMail(mailOptions, (error, info) => {
@@ -630,10 +703,68 @@ const forgotPassword = async (req, res, next) => {
   }
 };
 
-export {
-  logIn,
-  logInByGG,
-  signUp,
-  resetPassword,
-  forgotPassword,
+const verifyEmail = async (req, res, next) => {
+  try {
+    let otp = req.body.otp;
+    if (!otp) {
+      return res.status(400).json({
+        message: "OTP is required!",
+      });
+    }
+    otp = otp.trim();
+
+    const checkOtp = await OtpModel.findOne({
+      otp: otp,
+      purpose: "verifyEmail",
+    });
+
+    if (!checkOtp) {
+      return res.status(400).json({
+        message: "OTP is incorrect! Please check it again!",
+      });
+    }
+
+    const user = await UserModel.findOne({ email: checkOtp.email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User is not found!",
+      });
+    }
+
+    user.verificationStatus.emailVerified = true;
+    await user.save();
+
+    const deleteOTP = await OtpModel.findOneAndDelete({
+      otp: otp,
+      purpose: "verifyEmail",
+    });
+
+    if (user && deleteOTP) {
+      const mailOptions = {
+        from: "info@test.com",
+        to: checkOtp.email,
+        subject: "Your email is verify!",
+        text: `Your email is verify! Now you can acccess!`,
+      };
+
+      await transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          throw new Error("Error sending email");
+        } else {
+          console.log("Email sent: " + info.response);
+          return res.status(200).json({
+            message: "Your email is verify!",
+          });
+        }
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
 };
+
+export { logIn, logInByGG, signUp, resetPassword, forgotPassword, verifyEmail };

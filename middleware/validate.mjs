@@ -4,8 +4,8 @@ import jwt from "jsonwebtoken";
 import { jwtDecode } from "jwt-decode";
 
 const isLogInUser = async (req, res, next) => {
-  const checkRole = req.user.role;
-  if (checkRole === "user") {
+  const checkRole = await UserModel.findById(req.user.id);
+  if (checkRole.role === "user") {
     next();
   } else {
     return res.status(403).json({
@@ -15,8 +15,8 @@ const isLogInUser = async (req, res, next) => {
 };
 
 const isLogInAdmin = async (req, res, next) => {
-  const checkRole = req.user.role;
-  if (checkRole === "admin") {
+  const checkRole = await UserModel.findById(req.user.id);
+  if (checkRole.role === "admin") {
     next();
   } else {
     return res.status(403).json({
@@ -26,8 +26,8 @@ const isLogInAdmin = async (req, res, next) => {
 };
 
 const isLogInSuper = async (req, res, next) => {
-  const userRole = req.user.role;
-  if (userRole === "super") {
+  const checkRole = await UserModel.findById(req.user.id);
+  if (userRole.role === "super") {
     next();
   } else {
     return res.status(403).send("Forbidden");
@@ -43,9 +43,11 @@ const validateToken = async (req, res, next) => {
     jwt.verify(token, process.env.KEY_JWT, (err, decoded) => {
       if (err) {
         console.error("JWT verification failed:", err.message);
+        return res.status(401).json({
+          message: "Unauthorized - Invalid or expired token",
+        });
       } else {
-        console.log("Decoded JWT:");
-        console.log(decoded);
+        // console.log(decoded);
         req.user = decoded;
         next();
       }
@@ -61,6 +63,7 @@ const validateToken = async (req, res, next) => {
 const refreshToken = async (req, res, next) => {
   try {
     const refreshToken = req.cookies.refreshToken;
+    console.log(refreshToken);
     const decoded = jwtDecode(refreshToken);
     const checkInfo = await UserModel.findById(decoded.id);
 
@@ -85,9 +88,9 @@ const refreshToken = async (req, res, next) => {
 
     res.cookie("accessToken", newToken, {
       httpOnly: true,
-      secure: false,
       path: "/",
-      sameSite: "None",
+      // secure: false,
+      // sameSite: "None",
       maxAge: 5 * 60 * 1000,
     });
 
