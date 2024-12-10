@@ -24,7 +24,8 @@ const transporter = nodemailer.createTransport({
 const logIn = async (req, res, next) => {
   try {
     let { email, password } = req.body;
-
+    console.log(email)
+    console.log(password)
     if (!email) {
       return res.status(400).json({
         message: "Email is required!",
@@ -146,100 +147,6 @@ const logIn = async (req, res, next) => {
 
       return res.status(200).json({
         message: "Log in Admin successful!",
-      });
-    }
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-};
-
-const logInByGG = async (req, res, next) => {
-  try {
-    let { email, password } = req.body;
-
-    if (email) {
-      res.status(400).json({
-        message: "Email is required!",
-      });
-    }
-    email = email.trim();
-
-    if (password) {
-      res.status(400).json({
-        message: "Password is required!",
-      });
-    }
-    password = password.trim();
-
-    let checkEmail = await AdminModel.findOne({ email: email });
-
-    if (!checkEmail) {
-      res.status(400).json({
-        message: "Email is incorrect! Please check your email again!",
-      });
-    }
-
-    const hashingPasswordLogin = bcrypt.hashSync(password, checkEmail.salt);
-
-    const currentDate = new Date();
-    const MAX_TIME_SUSPENDED = 5 * 60 * 1000;
-
-    if (checkEmail.timeSuspended) {
-      const checkTimeSuspend = checkEmail.timeSuspended + MAX_TIME_SUSPENDED;
-      if (checkTimeSuspend < currentDate) {
-        res.status(400).json({
-          message:
-            "Your account will be automatically locked during 5 mins. Please log in after 5 mins again!",
-        });
-      }
-    }
-
-    if (hashingPasswordLogin !== password) {
-      let attmept = checkEmail.logInAttempt;
-      attmept = attmept - 1;
-      checkEmail = {
-        logInAttempt: count,
-      };
-      await checkEmail.save();
-      res.status(400).json({
-        message: `Password is incorrect! Please check your password again! After 5 incorrect entries, your account will be automatically locked! You have ${count} times left to try!`,
-      });
-    }
-
-    if (checkEmail.logInAttempt === 0) {
-      checkEmail = {
-        timeSuspended: currentDate,
-      };
-      await checkEmail.save();
-    }
-
-    if (hashingPasswordLogin === password && role === "user") {
-      checkEmail = {
-        logInAttempt: 5,
-        timeSuspended: null,
-      };
-      const userData = {
-        sub: checkEmail._id,
-        email: checkEmail.email,
-        emailVerified: checkEmail.verificationStatus.emailVerified,
-        role: checkEmail.role,
-      };
-
-      const token = jwt.sign(userData, process.env.KEY_JWT, {
-        expiresIn: "1h",
-      });
-      res.cookie("accessToken", token, {
-        httpOnly: true,
-        secure: false,
-        path: "/",
-        sameSite: "None",
-        maxAge: 3600000,
-      });
-      res.status(200).json({
-        message: "Log in is successful!",
       });
     }
   } catch (error) {
@@ -581,4 +488,4 @@ const forgotPassword = async (req, res, next) => {
   }
 };
 
-export { logIn, logInByGG, signUp, resetPassword, forgotPassword };
+export { logIn, signUp, resetPassword, forgotPassword };

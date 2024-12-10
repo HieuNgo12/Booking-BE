@@ -53,9 +53,10 @@ const userShema = new mongoose.Schema(
         "https://res.cloudinary.com/dsxlqhn53/image/upload/booking/user/default.jpg",
     },
     idCard: {
-      type: String,
-      required: false,
-      default: null,
+      number: { type: String, default: null },
+      DOI: { type: Date, default: null },
+      fullName: { type: String, default: null },
+      POI: { type: String, default: null },
     },
     membershipLevel: {
       type: String,
@@ -95,15 +96,23 @@ const userShema = new mongoose.Schema(
       paymentVerified: { type: Boolean, default: false },
     },
     paymentMethods: {
-      type: [
-        {
-          type: { type: String },
-          enum: ["payCash", "visa", "paypal", "E-banking"],
-          cardNumber: String,
-          expiry: String,
-          email: String,
+      card: {
+        type: {
+          type: String,
+          enum: ["visa", "mastercard", "amex", "napas"],
         },
-      ],
+        cardNumber: { type: String, default: null },
+        nameOnCard: { type: String, default: null },
+        expDate: { type: String, default: null },
+      },
+      onlineWallet: {
+        walletName: {
+          type: String,
+          enum: ["paypal", "momo", "zaloPay"],
+        },
+        email: { type: String, default: null },
+        phone: { type: String, default: null },
+      },
     },
     bookingHistory: {
       type: [

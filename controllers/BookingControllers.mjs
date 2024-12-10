@@ -54,16 +54,21 @@ const getBookingByBookingId = async (req, res, next) => {
     const bookingId = req.params.bookingId;
     const getBooking = await BookingModel.findById(bookingId)
       .populate("userId")
-      .populate("objectId");
+      .populate("objectId")
+      .populate("bookedRoomId");
+    // .populate({
+    //   path: "objectId",
+    //   populate: {
+    //     path: "room",
+    //     model: "room",
+    //   },
+    // });
 
     if (!getBooking || getBooking.length === 0) {
       return res.status(400).json({
         message: "No bookings found for this booking",
       });
     }
-
-    console.log(getBooking.userId._id);
-    console.log(userId);
 
     if (getBooking.userId._id.toString() !== userId) {
       return res.status(400).json({

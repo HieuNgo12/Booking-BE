@@ -50,6 +50,7 @@ const paymentSchema = new mongoose.Schema(
     },
     description: { type: String },
     tax: { type: Number, default: 0 },
+    prepay: { type: Number, default: 0 },
     refund: {
       isRefunded: { type: Boolean, default: false },
       refundDate: { type: Date },

@@ -6,6 +6,7 @@ import nodemailer from "nodemailer";
 import { v2 as cloudinary } from "cloudinary";
 import otpGenerator from "otp-generator";
 import OtpModel from "../models/OtpModel.mjs";
+import SupportModel from "../models/SupportsModel.mjs";
 
 //hashPassword
 const saltRounds = 10;
@@ -158,8 +159,6 @@ const updateProfile = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const file = req.file;
-    console.log(req.body);
-    console.log(req.file);
     const {
       firstName,
       lastName,
@@ -543,13 +542,284 @@ const changeLanguage = async (req, res, next) => {
   }
 };
 
+const changePaymentMethod = async (req, res, next) => {
+  try {
+    let { cardNumber, nameOnCard, expDate } = req.body;
+    const userId = req.user.id;
+
+    console.log(req.body);
+    if (!cardNumber) {
+      return res.status(400).json({
+        message: "Card Number is required!",
+      });
+    }
+    cardNumber = cardNumber.trim();
+
+    if (!nameOnCard) {
+      return res.status(400).json({
+        message: "Name On Card is required!",
+      });
+    }
+    nameOnCard = nameOnCard.trim();
+
+    if (!expDate) {
+      return res.status(400).json({
+        message: "Expiry Date is required!",
+      });
+    }
+    expDate = expDate.trim();
+
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User is not found!",
+      });
+    }
+
+    user.paymentMethods.card.cardNumber = cardNumber;
+    user.paymentMethods.card.nameOnCard = nameOnCard;
+    user.paymentMethods.card.expDate = expDate;
+    await user.save();
+
+    if (user) {
+      return res.status(200).json({
+        message: "Change paymentMethods successful!",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const changeOnlineWallet = async (req, res, next) => {
+  try {
+    let { phone } = req.body;
+    const userId = req.user.id;
+
+    if (!phone) {
+      return res.status(400).json({
+        message: "Phone  is required!",
+      });
+    }
+    phone = phone.trim();
+
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User is not found!",
+      });
+    }
+
+    user.paymentMethods.onlineWallet.phone = phone;
+    await user.save();
+
+    if (user) {
+      return res.status(200).json({
+        message: "Change paymentMethods successful!",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const changeIdCard = async (req, res, next) => {
+  try {
+    let { number, fullName, DOI, POI } = req.body;
+    const userId = req.user.id;
+
+    if (!number) {
+      return res.status(400).json({
+        message: "Number ID is required!",
+      });
+    }
+    number = number.trim();
+
+    if (!fullName) {
+      return res.status(400).json({
+        message: "Full Name is required!",
+      });
+    }
+    fullName = fullName.trim();
+
+    if (!DOI) {
+      return res.status(400).json({
+        message: "DOI is required!",
+      });
+    }
+    DOI = DOI.trim();
+
+    if (!POI) {
+      return res.status(400).json({
+        message: "POI is required!",
+      });
+    }
+    POI = POI.trim();
+
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User is not found!",
+      });
+    }
+
+    user.idCard.number = number;
+    user.idCard.fullName = fullName;
+    user.idCard.DOI = DOI;
+    user.idCard.POI = POI;
+    await user.save();
+
+    if (user) {
+      return res.status(200).json({
+        message: "Change ID Card successful!",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const sentEmailSupport = async (req, res, next) => {
+  try {
+    let { message, subject, email, name } = req.body;
+    const user = req.user;
+    const listFile = req.files;
+    const listResult = [];
+    const listImageCid = [];
+
+    if (!message) {
+      return res.status(400).json({
+        message: "Message is required!",
+      });
+    }
+    message = message.trim();
+
+    if (!subject) {
+      return res.status(400).json({
+        message: "Subject is required!",
+      });
+    }
+    subject = subject.trim();
+
+    if (user.email !== email) {
+      return res.status(400).json({
+        message: "Please log in again!",
+      });
+    }
+
+    const createSupport = await SupportModel.create({
+      userId: user.id,
+      message: message,
+    });
+
+    if (!listFile || listFile.length === 0) {
+      if (createSupport) {
+        const mailOptions = {
+          from: "info@test.com",
+          to: email,
+          subject: subject,
+          text: `Dear ${name} ${message} `,
+        };
+
+        await transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            throw new Error("Error sending email");
+          } else {
+            console.log("Email sent: " + info.response);
+            return res.status(200).json({
+              message: "Email is sent!",
+            });
+          }
+        });
+      }
+    }
+
+    for (const file in listFile) {
+      console.log(file);
+      const dataUrl = `data:${listFile[file].mimetype};base64,${listFile[
+        file
+      ].buffer.toString("base64")}`;
+
+      const imageCid = `image-${createSupport._id}_${file}`;
+      listImageCid.push(imageCid);
+      console.log(listImageCid);
+
+      const result = await cloudinary.uploader.upload(dataUrl, {
+        public_id: `${createSupport._id}_${file}`,
+        resource_type: "auto",
+        folder: `booking/support/${createSupport._id}`,
+        overwrite: true,
+      });
+      listResult.push(result.secure_url);
+
+      console.log(listFile.length - 1);
+
+      if (Number(file) === listFile.length - 1) {
+        createSupport.listImg = listResult;
+        await createSupport.save();
+        console.log("check");
+        const mailOptions = {
+          from: "info@test.com",
+          to: email,
+          subject: subject,
+          attachments: listResult.map((url, index) => ({
+            filename: `${createSupport._id}_${index}`,
+            path: url,
+            cid: listImageCid[index],
+          })),
+          html: `
+          <b>Dear ${name},</b>
+          <b>Your request:</b>
+          ${listImageCid
+            .map(
+              (cid) =>
+                `<img src="cid:${cid}" style="width: 300px; height: 200px; object-fit: cover;" />`
+            )
+            .join("")}
+          <div>${message}</div>
+          <div>Your message will be processed soon. We will support you in at least 3 business days.</div>
+        `,
+        };
+
+        const sentEmail = await transporter.sendMail(mailOptions);
+
+        if (sentEmail)
+          return res.status(200).json({
+            message: "Email is sent!",
+          });
+      }
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 export {
-  changePassword,
   profile,
-  updateProfile,
   changePhone,
   changeEmail,
+  changeIdCard,
+  updateProfile,
+  changePassword,
   sentToNewEmail,
   changeCurrency,
   changeLanguage,
+  sentEmailSupport,
+  changeOnlineWallet,
+  changePaymentMethod,
 };

@@ -1,17 +1,10 @@
 import RoomModel from "../models/RoomModel.mjs";
 
-const searchRoom = () => {
+const createRoom = async (req, res, next) => {
   try {
-    const { location, checkIn, checkOut, adults, children, room } = res.query;
-  } catch (error) {}
-};
-
-const addRoom = async (req, res, next) => {
-  try {
-    console.log(req.body);
     const hotel = await RoomModel.create(req.body);
     return res.status(200).json({
-      message: "Add tour successful",
+      message: "Add room successful",
       data: hotel,
     });
   } catch (error) {
@@ -22,4 +15,4 @@ const addRoom = async (req, res, next) => {
   }
 };
 
-export { searchRoom, addRoom };
+export { createRoom };
