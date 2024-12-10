@@ -4,13 +4,14 @@ const hotelSchema = new mongoose.Schema(
   {
     hotelName: { type: String, required: true },
     address: {
-      number: { type: String, required: true, default: null },
       street: { type: String, required: true, default: null },
       ward: { type: String, required: true, default: null },
       district: { type: String, required: true, default: null },
       city: { type: String, required: true, default: null },
+      country: { type: String, required: true, default: null },
       zipcode: { type: String, required: true, default: null },
     },
+    phone: { type: String, required: true, default: null },
     availableRooms: { type: Number, required: true, default: null },
     priceAveragePerNight: { type: Number, required: true, default: null },
     detailHotel: { type: String, default: null },

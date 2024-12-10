@@ -12,13 +12,17 @@ const roomSchema = new mongoose.Schema({
   pricePerNight: { type: Number, required: true },
   checkInDate: { type: Date },
   checkOutDate: { type: Date },
-  availableRoom: { type: Number, required: true },
-  imgRoom: { type: String },
+  availableRoom: { type: Number, required: true, default: true },
+  imgRoom: { type: String, default: null },
   detailRoom: { type: String },
+  amenities: { type: [String] },
+  maxOccupancy: { type: Number, required: true },
+  dimensions: { type: String }, 
   status: {
     type: String,
     enum: ["available", "occupied", "unavailable"],
     required: true,
+    default: "available",
   },
 });
 

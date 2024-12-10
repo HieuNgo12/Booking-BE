@@ -2,27 +2,48 @@ import mongoose from "mongoose";
 
 const locationShema = new mongoose.Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
-      required: true,
-    },
-    tourId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "tour",
-      required: true,
-    },
-    airlineName: { type: String, required: true },
-    availableSeats: { type: Number, required: true },
-    departureAirport: { type: String, required: true },
-    destinationAirport: { type: String, required: true },
-    departureDate: { type: Date, required: true },
-    destinationDate: { type: Date, required: true },
-    price: { type: Number, required: true },
-    status: {
+    name: {
       type: String,
-      enum: ["scheduled", "cancelled", "completed"],
+      required: true, // Tên địa điểm (bắt buộc)
+      trim: true,
+    },
+    description: {
+      type: String, // Mô tả địa điểm
+      default: null,
+    },
+    address: {
+      street: { type: String, required: true }, // Đường
+      ward: { type: String }, // Phường/Xã
+      district: { type: String, required: true }, // Quận/Huyện
+      city: { type: String, required: true }, // Thành phố/Tỉnh
+      country: { type: String, required: true }, // Quốc gia
+    },
+    images: {
+      type: [String], // Danh sách URL hình ảnh
+      default: [],
+    },
+    category: {
+      type: String,
+      enum: ["hotel", "restaurant", "tourist_spot", "shopping_mall", "other"], // Loại địa điểm
       required: true,
+    },
+    rating: {
+      type: Number, 
+      min: 1,
+      max: 5,
+      default: 3,
+    },
+    openingHours: {
+      type: String, // Giờ mở cửa (ví dụ: "9:00 AM - 9:00 PM")
+      default: null,
+    },
+    contact: {
+      phone: { type: String }, // Số điện thoại liên hệ
+      email: { type: String }, // Email liên hệ
+    },
+    website: {
+      type: String, // Website liên hệ
+      default: null,
     },
   },
   { timestamps: true }

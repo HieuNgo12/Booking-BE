@@ -1,10 +1,8 @@
 import express from "express";
-import { addRoom, searchRoom } from "../controllers/RoomControllers.mjs";
+import { createRoom } from "../controllers/RoomControllers.mjs";
 
 const router = express.Router();
 
-router.get("/api/v1/search-room", searchRoom);
-
-router.post("/api/v1/add-new-room", addRoom);
+router.post("/api/v1/create-room", createRoom);
 
 export default router;
