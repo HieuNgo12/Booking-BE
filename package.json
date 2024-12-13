@@ -7,7 +7,7 @@
     "dev": "nodemon ./app.mjs"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "^2.2.8",
+    "@reduxjs/toolkit": "^2.5.0",
     "@vonage/server-sdk": "^3.19.2",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.19.0",
@@ -29,7 +29,7 @@
     "nodemailer": "^6.9.16",
     "npm": "^10.8.1",
     "otp-generator": "^4.0.1",
-    "react-redux": "^9.1.2",
+    "react-redux": "^9.2.0",
     "redis": "^4.7.0",
     "redux": "^5.0.1",
     "serverless-http": "^3.2.0",

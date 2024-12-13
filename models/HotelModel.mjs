@@ -16,6 +16,11 @@ const hotelSchema = new mongoose.Schema(
     priceAveragePerNight: { type: Number, required: true, default: null },
     detailHotel: { type: String, default: null },
     imgHotel: { type: String, default: null },
+    category: {
+      type: String,
+      enum: ["hotel", "homestay", "resort"],
+      default: null,
+    },
     status: {
       type: String,
       enum: ["pending", "active", "inactive"],

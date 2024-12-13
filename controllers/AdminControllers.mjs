@@ -24,8 +24,7 @@ const transporter = nodemailer.createTransport({
 const logIn = async (req, res, next) => {
   try {
     let { email, password } = req.body;
-    console.log(email)
-    console.log(password)
+
     if (!email) {
       return res.status(400).json({
         message: "Email is required!",
@@ -101,9 +100,78 @@ const logIn = async (req, res, next) => {
     }
 
     if (checkEmail.verificationStatus.emailVerified === false) {
-      return res.status(400).json({
-        message: "Please verify email first!",
+      console.log("check");
+      const checkOTP = await OtpModel.findOne({
+        email: email,
+        purpose: "verifyEmail",
       });
+
+      if (checkOTP) {
+        const mailOptions = {
+          from: "info@test.com",
+          to: email,
+          subject: "Your OTP Code",
+          text: `Otp to verify email is: ${checkOTP.otp}`,
+        };
+
+        await transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            throw new Error("Error sending email");
+          } else {
+            console.log("Email sent: " + info.response);
+            return res.status(400).json({
+              message:
+                "Please verify email first! OTP is sent! Please check your email!",
+              emailVerified: false,
+            });
+          }
+        });
+
+        return res.status(400).json({
+          message:
+            "Please verify email first! OTP is sent! Please check your email!",
+          emailVerified: false,
+        });
+      } else {
+        const otp = otpGenerator.generate(6, {
+          digits: true,
+          lowerCaseAlphabets: false,
+          upperCaseAlphabets: false,
+          specialChars: false,
+        });
+
+        const newOtp = await OtpModel.create({
+          email: email,
+          otp: otp,
+          purpose: "verifyEmail",
+        });
+        if (newOtp) {
+          const mailOptions = {
+            from: "info@test.com",
+            to: email,
+            subject: "Your OTP Code",
+            text: `Otp to verify email is: ${otp}`,
+          };
+
+          await transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              throw new Error("Error sending email");
+            } else {
+              console.log("Email sent: " + info.response);
+              return res.status(400).json({
+                message:
+                  "Please verify email first! OTP is sent! Please check your email!",
+                emailVerified: false,
+              });
+            }
+          });
+          return res.status(400).json({
+            message:
+              "Please verify email first! OTP is sent! Please check your email!",
+            emailVerified: false,
+          });
+        }
+      }
     }
 
     if (hashingPasswordLogin && checkEmail.role === "admin") {
@@ -113,8 +181,8 @@ const logIn = async (req, res, next) => {
       const userDataAccessToken = {
         id: checkEmail._id,
         email: checkEmail.email,
-        emailVerified: checkEmail.verificationStatus.emailVerified,
-        role: checkEmail.role,
+        firstName: checkEmail.firstName,
+        lastName: checkEmail.lastName,
       };
 
       const userDataRefreshToken = {
@@ -130,23 +198,23 @@ const logIn = async (req, res, next) => {
       });
 
       res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: false,
+        httpOnly: false,
         path: "/",
-        sameSite: "None",
+        // secure: false,
+        // sameSite: "None",
         maxAge: 5 * 60 * 1000,
       });
 
       res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: false,
+        httpOnly: false,
         path: "/",
-        sameSite: "None",
+        // secure: false,
+        // sameSite: "None",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       return res.status(200).json({
-        message: "Log in Admin successful!",
+        message: "Log in successful!",
       });
     }
   } catch (error) {
