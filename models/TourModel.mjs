@@ -34,6 +34,12 @@ const tourSchema = new mongoose.Schema(
         trim: true,
       },
     ],
+    priceExcludes: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
     cancellationPolicy: [
       {
         type: String,

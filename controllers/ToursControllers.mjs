@@ -2,10 +2,18 @@ import TourModel from "../models/TourModel.mjs";
 
 const getTour = async (req, res, next) => {
   try {
-    const getTour = await TourModel.find();
+    const page = parseInt(req.query.page, 10) || 10;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+
+    const total = await TourModel.countDocuments();
+    const getTour = await TourModel.find()
+      .skip((page - 1) * pageSize)
+      .limit(pageSize);
+
     return res.status(200).json({
       message: "Get hotel successful",
       data: getTour,
+      total: total,
     });
   } catch (error) {
     return res.status(500).json({
@@ -67,4 +75,4 @@ const addTour = async (req, res, next) => {
   }
 };
 
-export { searchTour, addTour, getTour, deleteTour , editTour};
+export { searchTour, addTour, getTour, deleteTour, editTour };
