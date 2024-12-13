@@ -1,6 +1,5 @@
 import express from "express";
 import multer from "multer";
-import { v2 as cloudinary } from "cloudinary";
 import {
   profile,
   changePassword,
@@ -14,8 +13,13 @@ import {
   changeOnlineWallet,
   changeIdCard,
   sentEmailSupport,
+  getAllUsers,
 } from "../controllers/UsersControllers.mjs";
-import { isLogInUser, validateToken } from "../middleware/validate.mjs";
+import {
+  isLogInAdmin,
+  isLogInUser,
+  validateToken,
+} from "../middleware/validate.mjs";
 
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -91,5 +95,7 @@ router.post(
   isLogInUser,
   sentEmailSupport
 );
+
+router.get("/api/v1/get-all-users", validateToken, isLogInAdmin, getAllUsers);
 
 export default router;

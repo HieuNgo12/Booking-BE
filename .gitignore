@@ -1,7 +1,4 @@
 node_modules
 package-lock.json
 .env
-TourModel.mjs
-ToursControllers.mjs
-TourRouters.mjs
 fireBase.mjs
