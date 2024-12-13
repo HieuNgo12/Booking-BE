@@ -12,12 +12,14 @@ const router = express.Router();
 
 router.get("/api/v1/get-hotel", getHotel);
 
+router.get("/api/v1/search-hotel", searchHotel);
+
+router.post("/api/v1/create-hotel", validateToken, isLogInAdmin, addHotel);
+
 router.patch("/api/v1/edit-hotel/:hotelId", validateToken, isLogInAdmin, editHotel);
 
 router.delete("/api/v1/delete-hotel/:hotelId", validateToken, isLogInAdmin, deleteHotel);
 
-router.get("/api/v1/search-hotel", searchHotel);
 
-router.post("/api/v1/add-new-hotel", addHotel);
 
 export default router;
