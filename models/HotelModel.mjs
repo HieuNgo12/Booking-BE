@@ -14,12 +14,12 @@ const hotelSchema = new mongoose.Schema(
     availableRooms: { type: Number, required: true, default: null },
     priceAveragePerNight: { type: Number, required: true, default: null },
     description: { type: String, default: null },
-    star: { type: Number, default: null },
+    star: { type: String, default: null },
+    amenities: { type: [String] },
     imgHotel: {
       avatar: { type: String, default: null },
       img: [{ type: String, default: null }],
     },
-    imgHotel: [{ type: String, default: null }],
     category: {
       type: String,
       enum: ["hotel", "homestay", "resort"],
@@ -28,7 +28,7 @@ const hotelSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["pending", "active", "inactive"],
-      default: "pending",
+      default: "active",
     },
     reviewId: [{ type: mongoose.Schema.Types.ObjectId, ref: "review" }],
     bookingId: [{ type: mongoose.Schema.Types.ObjectId, ref: "booking" }],

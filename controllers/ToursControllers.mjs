@@ -11,7 +11,7 @@ const getTour = async (req, res, next) => {
       .limit(pageSize);
 
     return res.status(200).json({
-      message: "Get hotel successful",
+      message: "Get tour successful",
       data: getTour,
       total: total,
     });
