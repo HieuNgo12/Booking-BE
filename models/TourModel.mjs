@@ -22,12 +22,10 @@ const tourSchema = new mongoose.Schema(
       destination: [{ type: String, required: true, default: null }],
       travelSchedule: [{ type: String, required: true, default: null }],
     },
-    listImg: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
+    imgHotel: {
+      avatar: { type: String, default: null },
+      img: [{ type: String, default: null }],
+    },
     priceIncludes: [
       {
         type: String,

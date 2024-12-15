@@ -21,6 +21,44 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const getBooking = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+    const objectType = req.query.objectType;
+    const total = await BookingModel.countDocuments();
+    const getBooking = await BookingModel.find()
+      .populate("userId")
+      .populate("objectId")
+      .populate("bookedRoomId")
+      .skip((page - 1) * pageSize)
+      .limit(pageSize);
+
+    const filterBooking = getBooking.filter(
+      (item) => item.objectType === `${objectType}`
+    );
+
+    if (!filterBooking || filterBooking.length === 0) {
+      return res.status(404).json({
+        message: "No bookings found for hotel",
+      });
+    }
+
+    if (filterBooking) {
+      return res.status(200).json({
+        message: "Get hotel booking successful",
+        data: filterBooking,
+        total: total,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const getBookingByUserId = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -108,4 +146,4 @@ const createBooking = async (req, res, next) => {
   }
 };
 
-export { getBookingByUserId, createBooking, getBookingByBookingId };
+export { getBookingByUserId, createBooking, getBookingByBookingId, getBooking };
