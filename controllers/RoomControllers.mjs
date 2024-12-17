@@ -71,24 +71,5 @@ const createRoom = async (req, res, next) => {
     });
   }
 };
-<<<<<<< HEAD
-const getRoomById = async (req, res, next) => {
-  try {
-    console.log(req.body);
-    const room = await RoomModel.findOne({ _id: req.params.roomId });
-    return res.status(200).json({
-      message: "Add tour successful",
-      data: room,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-};
-export { searchRoom, addRoom, getRoomById };
-=======
 
 export { createRoom };
->>>>>>> a04e1907746a7a608f9555f7bec8ed87c808560d
