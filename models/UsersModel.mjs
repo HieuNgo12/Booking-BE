@@ -35,13 +35,17 @@ const userShema = new mongoose.Schema(
       required: false,
       default: null,
     },
+    nationality: {
+      type: String,
+      required: false,
+      default: null,
+    },
     address: {
-      number: { type: String, default: null },
       street: { type: String, default: null },
       ward: { type: String, default: null },
       district: { type: String, default: null },
       city: { type: String, default: null },
-      zipcode: { type: String, default: null },
+      country: { type: String, default: null },
     },
     avatar: {
       type: String,
@@ -49,14 +53,25 @@ const userShema = new mongoose.Schema(
         "https://res.cloudinary.com/dsxlqhn53/image/upload/booking/user/default.jpg",
     },
     idCard: {
-      type: String,
-      required: false,
-      default: null,
+      number: { type: String, default: null },
+      DOI: { type: Date, default: null },
+      fullName: { type: String, default: null },
+      POI: { type: String, default: null },
     },
     membershipLevel: {
       type: String,
       enum: ["bronze", "silver", "gold", "platinum", "diamond"],
       default: "bronze",
+    },
+    currency: {
+      type: String,
+      enum: ["usd", "vnd", "euro", "yen"],
+      default: "usd",
+    },
+    language: {
+      type: String,
+      enum: ["English", "VietNam", "Japan"],
+      default: "English",
     },
     loyaltyPoints: {
       type: Number,
@@ -81,15 +96,23 @@ const userShema = new mongoose.Schema(
       paymentVerified: { type: Boolean, default: false },
     },
     paymentMethods: {
-      type: [
-        {
-          type: { type: String },
-          enum: ["payCash", "visa", "paypal", "E-banking"],
-          cardNumber: String,
-          expiry: String,
-          email: String,
+      card: {
+        type: {
+          type: String,
+          enum: ["visa", "mastercard", "amex", "napas"],
         },
-      ],
+        cardNumber: { type: String, default: null },
+        nameOnCard: { type: String, default: null },
+        expDate: { type: String, default: null },
+      },
+      onlineWallet: {
+        walletName: {
+          type: String,
+          enum: ["paypal", "momo", "zaloPay"],
+        },
+        email: { type: String, default: null },
+        phone: { type: String, default: null },
+      },
     },
     bookingHistory: {
       type: [

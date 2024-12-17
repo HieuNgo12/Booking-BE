@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const supportSchema = new mongoose.Schema(
   {
@@ -7,21 +7,23 @@ const supportSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-    adminId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "admin",
-      required: true,
-    },
     message: {
       type: String,
       required: true,
       trim: true,
     },
-    img: {
-      type: String,
-      trim: true,
-    },
+    listImg: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
     reply: {
+      adminId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "admin",
+        default: null,
+      },
       timeReply: {
         type: Date,
       },
@@ -32,14 +34,13 @@ const supportSchema = new mongoose.Schema(
       },
       text: {
         type: String,
-        required: true,
         trim: true,
       },
       note: {
         type: String,
         trim: true,
       },
-      imgString: {
+      imgSupport: {
         type: String,
         trim: true,
       },

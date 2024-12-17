@@ -3,7 +3,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import otpGenerator from "otp-generator";
-import FlightModel from "../models/FlightModel.mjs";
+import twilio from "twilio";
+import PaymentModel from "../models/PaymentModel.mjs";
 
 //hashPassword
 const saltRounds = 10;
@@ -20,13 +21,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const getFlight = async (req, res, next) => {
+const getPaymentByUserId = async (req, res, next) => {
   try {
-    const getFlight = await FlightModel.find();
-    return res.status(200).json({
-      message: "Get flight successful",
-      data: getFlight,
-    });
+    const userId = req.user.id;
+    const getPayment = PaymentModel.findById(userId);
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",
@@ -35,14 +33,13 @@ const getFlight = async (req, res, next) => {
   }
 };
 
-const createFlight = async (req, res, next) => {
+const createPayment = async (req, res, next) => {
   try {
-    // const userId = req.user.id;
-    // const createBooking = BookingModel.create(req.body, { userId: userId });
-    const createBooking = await FlightModel.create(req.body);
-    if (createBooking) {
+    const userId = req.user.id;
+    const createPayment = PaymentModel.create(req.body, { userId: userId });
+    if (createPayment) {
       return res.status(200).json({
-        message: "Create flight successful",
+        message: "Create payment successful",
       });
     }
   } catch (error) {
@@ -53,4 +50,4 @@ const createFlight = async (req, res, next) => {
   }
 };
 
-export { getFlight, createFlight };
+export { getPaymentByUserId, createPayment };

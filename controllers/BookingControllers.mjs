@@ -1,17 +1,149 @@
-import express from "express";
+import validator from "validator";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import otpGenerator from "otp-generator";
+import twilio from "twilio";
+import BookingModel from "../models/BookingModel.mjs";
 
-const router = express.Router();
+//hashPassword
+const saltRounds = 10;
+const salt = bcrypt.genSaltSync(saltRounds);
 
-router.post("/api/v1/admin-log-in", logIn);
+//nodemailder
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  secure: false,
+  port: 587,
+  auth: {
+    user: process.env.MY_EMAIL,
+    pass: process.env.PASS_EMAIL,
+  },
+});
 
-router.post("/api/v1/admin-login-gg", logInByGG);
+const getBooking = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+    const objectType = req.query.objectType;
+    const total = await BookingModel.countDocuments();
+    const getBooking = await BookingModel.find()
+      .populate("userId")
+      .populate("objectId")
+      .populate("bookedRoomId")
+      .skip((page - 1) * pageSize)
+      .limit(pageSize);
 
-router.post("/api/v1/admin-sign-up", signUp);
+    const filterBooking = getBooking.filter(
+      (item) => item.objectType === `${objectType}`
+    );
 
-router.post("/api/v1/admin-forgot-password", forgotPassword);
+    if (!filterBooking || filterBooking.length === 0) {
+      return res.status(404).json({
+        message: "No bookings found for hotel",
+      });
+    }
 
-router.post("/api/v1/admin-reset-password", resetPassword);
+    if (filterBooking) {
+      return res.status(200).json({
+        message: "Get hotel booking successful",
+        data: filterBooking,
+        total: total,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
 
-router.post("/api/v1/admin-refresh-token", refreshToken);
+const getBookingByUserId = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const getBooking = await BookingModel.find({ userId: userId })
+      .populate("userId")
+      .populate("objectId");
 
-export default router;
+    if (!getBooking || getBooking.length === 0) {
+      return res.status(404).json({
+        message: "No bookings found for this user",
+      });
+    }
+
+    if (getBooking) {
+      return res.status(200).json({
+        message: "Get booking successful",
+        data: getBooking,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const getBookingByBookingId = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const bookingId = req.params.bookingId;
+    const getBooking = await BookingModel.findById(bookingId)
+      .populate("userId")
+      .populate("objectId")
+      .populate("bookedRoomId");
+    // .populate({
+    //   path: "objectId",
+    //   populate: {
+    //     path: "room",
+    //     model: "room",
+    //   },
+    // });
+
+    if (!getBooking || getBooking.length === 0) {
+      return res.status(400).json({
+        message: "No bookings found for this booking",
+      });
+    }
+
+    if (getBooking.userId._id.toString() !== userId) {
+      return res.status(400).json({
+        message: "You are not owner booking!",
+      });
+    }
+
+    if (getBooking) {
+      return res.status(200).json({
+        message: "Get booking successful",
+        data: getBooking,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const createBooking = async (req, res, next) => {
+  try {
+    // const userId = req.user.id;
+    // const createBooking = BookingModel.create(req.body, { userId: userId });
+    const createBooking = BookingModel.create(req.body);
+    if (createBooking) {
+      return res.status(200).json({
+        message: "Create booking successful",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+export { getBookingByUserId, createBooking, getBookingByBookingId, getBooking };

@@ -1,10 +1,13 @@
 import express from "express";
-import { addFlight, searchFlight } from "../controllers/FlightControllers.mjs";
+import { createFlight, getFlight } from "../controllers/FlightControllers.mjs";
+import { isLogInAdmin, validateToken } from "../middleware/validate.mjs";
 
 const router = express.Router();
 
-router.get("/api/v1/search-flight", searchFlight);
+// router.get("/api/v1/search-flight", searchFlight);
 
-router.post("/api/v1/add-new-flight", addFlight);
+router.get("/api/v1/get-flight", getFlight);
+
+router.post("/api/v1/create-flight", validateToken, isLogInAdmin, createFlight);
 
 export default router;

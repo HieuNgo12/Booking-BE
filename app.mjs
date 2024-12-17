@@ -7,7 +7,7 @@ import Serverless from "serverless-http";
 import connectToMGDB from "./connection.mjs";
 import HotelRouters from "./routes/HotelRouters.mjs";
 import PromotionsRouters from "./routes/PromotionsRouters.mjs";
-import TourRouters from "./routes/TourRouters.mjs";
+// import TourRouters from "./routes/TourRouters.mjs";
 import ReviewsRouters from "./routes/ReviewsRouters.mjs";
 import WishlistsRouters from "./routes/WishlistsRouters.mjs";
 import UserRouters from "./routes/UsersRouters.mjs";
@@ -17,12 +17,13 @@ import AuthenticationRouters from "./routes/AuthenticationRouter.mjs";
 import BookingRouters from "./routes/BookingRouter.mjs";
 import RoomRouters from "./routes/RoomRouters.mjs";
 import FlightRouters from "./routes/FlightRouters.mjs";
+import PaymentRouters from "./routes/PaymentRouter.mjs";
 
 dotenv.config();
 
 const corsConfig = {
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: ["http://localhost:5173", "http://localhost:3000"],
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
@@ -41,20 +42,19 @@ const App = async () => {
 
   connectToMGDB();
 
-
   app.use("/", AdminRouters);
   app.use("/", AuthenticationRouters);
   app.use("/", BookingRouters);
   app.use("/", FlightRouters);
   app.use("/", HotelRouters);
+  app.use("/", PaymentRouters);
   app.use("/", PromotionsRouters);
   app.use("/", RoomRouters);
   app.use("/", SupportsRouters);
-  app.use("/", TourRouters);
+  // app.use("/", TourRouters);
   app.use("/", ReviewsRouters);
   app.use("/", UserRouters);
   app.use("/", WishlistsRouters);
-
 
   app.use((err, req, res, next) => {
     console.error(err.stack);

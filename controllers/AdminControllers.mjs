@@ -100,20 +100,89 @@ const logIn = async (req, res, next) => {
     }
 
     if (checkEmail.verificationStatus.emailVerified === false) {
-      return res.status(400).json({
-        message: "Please verify email first!",
+      console.log("check");
+      const checkOTP = await OtpModel.findOne({
+        email: email,
+        purpose: "verifyEmail",
       });
+
+      if (checkOTP) {
+        const mailOptions = {
+          from: "info@test.com",
+          to: email,
+          subject: "Your OTP Code",
+          text: `Otp to verify email is: ${checkOTP.otp}`,
+        };
+
+        await transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            throw new Error("Error sending email");
+          } else {
+            console.log("Email sent: " + info.response);
+            return res.status(400).json({
+              message:
+                "Please verify email first! OTP is sent! Please check your email!",
+              emailVerified: false,
+            });
+          }
+        });
+
+        return res.status(400).json({
+          message:
+            "Please verify email first! OTP is sent! Please check your email!",
+          emailVerified: false,
+        });
+      } else {
+        const otp = otpGenerator.generate(6, {
+          digits: true,
+          lowerCaseAlphabets: false,
+          upperCaseAlphabets: false,
+          specialChars: false,
+        });
+
+        const newOtp = await OtpModel.create({
+          email: email,
+          otp: otp,
+          purpose: "verifyEmail",
+        });
+        if (newOtp) {
+          const mailOptions = {
+            from: "info@test.com",
+            to: email,
+            subject: "Your OTP Code",
+            text: `Otp to verify email is: ${otp}`,
+          };
+
+          await transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              throw new Error("Error sending email");
+            } else {
+              console.log("Email sent: " + info.response);
+              return res.status(400).json({
+                message:
+                  "Please verify email first! OTP is sent! Please check your email!",
+                emailVerified: false,
+              });
+            }
+          });
+          return res.status(400).json({
+            message:
+              "Please verify email first! OTP is sent! Please check your email!",
+            emailVerified: false,
+          });
+        }
+      }
     }
 
-    if (hashingPasswordLogin && checkEmail.role === "user") {
+    if (hashingPasswordLogin && checkEmail.role === "admin") {
       (checkEmail.logInAttempt = 5), (checkEmail.timeSuspended = null);
       await checkEmail.save();
 
       const userDataAccessToken = {
         id: checkEmail._id,
         email: checkEmail.email,
-        emailVerified: checkEmail.verificationStatus.emailVerified,
-        role: checkEmail.role,
+        firstName: checkEmail.firstName,
+        lastName: checkEmail.lastName,
       };
 
       const userDataRefreshToken = {
@@ -129,117 +198,23 @@ const logIn = async (req, res, next) => {
       });
 
       res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: false,
+        httpOnly: false,
         path: "/",
-        sameSite: "None",
+        // secure: false,
+        // sameSite: "None",
         maxAge: 5 * 60 * 1000,
       });
 
       res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: false,
+        httpOnly: false,
         path: "/",
-        sameSite: "None",
+        // secure: false,
+        // sameSite: "None",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       return res.status(200).json({
         message: "Log in successful!",
-      });
-    }
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-};
-
-const logInByGG = async (req, res, next) => {
-  try {
-    let { email, password } = req.body;
-
-    if (email) {
-      res.status(400).json({
-        message: "Email is required!",
-      });
-    }
-    email = email.trim();
-
-    if (password) {
-      res.status(400).json({
-        message: "Password is required!",
-      });
-    }
-    password = password.trim();
-
-    let checkEmail = await AdminModel.findOne({ email: email });
-
-    if (!checkEmail) {
-      res.status(400).json({
-        message: "Email is incorrect! Please check your email again!",
-      });
-    }
-
-    const hashingPasswordLogin = bcrypt.hashSync(password, checkEmail.salt);
-
-    const currentDate = new Date();
-    const MAX_TIME_SUSPENDED = 5 * 60 * 1000;
-
-    if (checkEmail.timeSuspended) {
-      const checkTimeSuspend = checkEmail.timeSuspended + MAX_TIME_SUSPENDED;
-      if (checkTimeSuspend < currentDate) {
-        res.status(400).json({
-          message:
-            "Your account will be automatically locked during 5 mins. Please log in after 5 mins again!",
-        });
-      }
-    }
-
-    if (hashingPasswordLogin !== password) {
-      let attmept = checkEmail.logInAttempt;
-      attmept = attmept - 1;
-      checkEmail = {
-        logInAttempt: count,
-      };
-      await checkEmail.save();
-      res.status(400).json({
-        message: `Password is incorrect! Please check your password again! After 5 incorrect entries, your account will be automatically locked! You have ${count} times left to try!`,
-      });
-    }
-
-    if (checkEmail.logInAttempt === 0) {
-      checkEmail = {
-        timeSuspended: currentDate,
-      };
-      await checkEmail.save();
-    }
-
-    if (hashingPasswordLogin === password && role === "user") {
-      checkEmail = {
-        logInAttempt: 5,
-        timeSuspended: null,
-      };
-      const userData = {
-        sub: checkEmail._id,
-        email: checkEmail.email,
-        emailVerified: checkEmail.verificationStatus.emailVerified,
-        role: checkEmail.role,
-      };
-
-      const token = jwt.sign(userData, process.env.KEY_JWT, {
-        expiresIn: "1h",
-      });
-      res.cookie("accessToken", token, {
-        httpOnly: true,
-        secure: false,
-        path: "/",
-        sameSite: "None",
-        maxAge: 3600000,
-      });
-      res.status(200).json({
-        message: "Log in is successful!",
       });
     }
   } catch (error) {
@@ -581,4 +556,4 @@ const forgotPassword = async (req, res, next) => {
   }
 };
 
-export { logIn, logInByGG, signUp, resetPassword, forgotPassword };
+export { logIn, signUp, resetPassword, forgotPassword };

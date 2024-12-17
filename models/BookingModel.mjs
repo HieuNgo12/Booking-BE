@@ -6,30 +6,53 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
-      default: null,
     },
-    hotelId: {
+    objectId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "hotel",
-      default: null,
+      required: true,
+      refPath: "objectType",
     },
-    tourId: {
+    objectType: {
+      type: String,
+      required: true,
+      enum: ["hotel", "tour", "flight"],
+    },
+    bookedRoomId: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "room",
+      },
+    ],
+    paymentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "tour",
+      ref: "payments",
       default: null,
     },
-    fightId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "flight",
-      default: null,
-    },
-    objectType: { type: String, required: true, enum: ["hotel, tour"] },
-    paymentId: { type: Number, required: true },
     bookingStartDate: { type: Date, required: true },
     bookingEndDate: { type: Date, required: true },
     totalPersons: { type: Number, required: true },
-    totalAmount: { type: String, required: true },
-    status: { type: String, default: null },
+    totalAmount: { type: Number, required: true },
+    discount: { type: Number, default: 0 },
+    status: {
+      type: String,
+      enum: ["pending", "confirmed", "cancelled", "completed"],
+      default: "pending",
+    },
+    specialRequests: { type: String, default: null },
+    cancellationPolicy: { type: String, default: null },
+    contactInfo: {
+      name: { type: String },
+      email: { type: String },
+      phone: { type: String },
+    },
+    services: [
+      {
+        name: { type: String },
+        price: { type: Number },
+      },
+    ],
+    bookingReference: { type: String, unique: true, required: true },
+    internalNotes: { type: String, default: null },
   },
   { timestamps: true }
 );
