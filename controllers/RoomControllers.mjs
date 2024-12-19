@@ -72,4 +72,33 @@ const createRoom = async (req, res, next) => {
   }
 };
 
-export { createRoom };
+const getRoomById = async (req, res, next) => {
+  try {
+    const room = await RoomModel.findOne({ _id: req.params.roomId }).populate("hotelId");
+    return res.status(200).json({
+      message: "Successfully get room",
+      data: room,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+const getRoomList = async (req, res, next) => {
+  try {
+    const room = await RoomModel.find({}).populate("hotelId");
+    return res.status(200).json({
+      message: "Successfully get room",
+      data: room,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+export { createRoom, getRoomById, getRoomList };

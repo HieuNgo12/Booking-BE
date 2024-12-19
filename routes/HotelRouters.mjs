@@ -7,6 +7,7 @@ import {
   getAllHotel,
   editHotel,
   deleteHotel,
+  getHotelById,
 } from "../controllers/HotelControllers.mjs";
 import { isLogInAdmin, validateToken } from "../middleware/validate.mjs";
 
@@ -43,6 +44,10 @@ router.delete(
   validateToken,
   isLogInAdmin,
   deleteHotel
+);
+router.get(
+  "/api/v1/hotel/:hotelId",
+  getHotelById
 );
 
 export default router;
