@@ -18,6 +18,10 @@ const supportSchema = new mongoose.Schema(
         trim: true,
       },
     ],
+    statusReply: {
+      type: Boolean,
+      default: false,
+    },
     reply: {
       adminId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -27,12 +31,7 @@ const supportSchema = new mongoose.Schema(
       timeReply: {
         type: Date,
       },
-      statusReply: {
-        type: String,
-        enum: ["pending", "replied", "resolved"],
-        default: "pending",
-      },
-      text: {
+      messageReply: {
         type: String,
         trim: true,
       },
@@ -40,10 +39,12 @@ const supportSchema = new mongoose.Schema(
         type: String,
         trim: true,
       },
-      imgSupport: {
-        type: String,
-        trim: true,
-      },
+      imgSupport: [
+        {
+          type: String,
+          trim: true,
+        },
+      ],
     },
     status: {
       type: String,

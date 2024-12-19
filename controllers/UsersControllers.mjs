@@ -811,7 +811,7 @@ const sentEmailSupport = async (req, res, next) => {
 
 const getAllUsers = async (req, res, next) => {
   try {
-    const users = await UserModel.find();
+    const users = await UserModel.find().populate("reviewId");
     return res.status(200).json({
       message: "Get all users",
       data: users,

@@ -30,6 +30,7 @@ const getBooking = async (req, res, next) => {
     const getBooking = await BookingModel.find()
       .populate("userId")
       .populate("objectId")
+      .populate("paymentId")
       .populate("bookedRoomId")
       .skip((page - 1) * pageSize)
       .limit(pageSize);

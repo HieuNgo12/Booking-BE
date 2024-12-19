@@ -37,9 +37,6 @@ const isLogInSuper = async (req, res, next) => {
 
 const validateToken = async (req, res, next) => {
   try {
-    // const authHeader = req.headers["authorization"];
-    // const token = authHeader.split(" ")[1];
-
     const token = req.cookies.accessToken;
     jwt.verify(token, process.env.KEY_JWT, (err, decoded) => {
       if (err) {
@@ -48,7 +45,6 @@ const validateToken = async (req, res, next) => {
           message: "Unauthorized - Invalid or expired token",
         });
       } else {
-        // console.log(decoded);
         req.user = decoded;
         next();
       }

@@ -3,45 +3,43 @@ import mongoose from "mongoose";
 const tourSchema = new mongoose.Schema(
   {
     tourName: { type: String, required: true, default: null },
+    tourCode: { type: String, required: true, default: null },
     startDateBooking: { type: Date, required: true, default: null },
     endDateBooking: { type: Date, required: true, default: null },
     price: { type: Number, required: true, default: null },
     capacity: { type: Number, required: true, default: null },
     description: { type: String, default: null },
-    tourRestrictions: { type: String, default: null },
+    tourRestrictions: [{ type: String, default: null }],
     transportationMethod: [{ type: String, default: null }],
     status: {
       type: String,
       enum: ["pending", "available", "cancelled"],
-      default: "pending",
+      default: "available",
     },
     duration: { type: String, default: null },
     inforLocation: {
       startDestination: { type: String, required: true, default: null },
       endDestination: { type: String, required: true, default: null },
       destination: [{ type: String, required: true, default: null }],
-      travelSchedule: [{ type: String, required: true, default: null }],
+      travelSchedule: [{ type: String, default: null }],
     },
-    imgHotel: {
+    imgTour: {
       avatar: { type: String, default: null },
-      img: [{ type: String, default: null }],
+      listTour: [{ type: String, default: null }],
     },
     priceIncludes: [
       {
         type: String,
-        trim: true,
       },
     ],
     priceExcludes: [
       {
         type: String,
-        trim: true,
       },
     ],
     cancellationPolicy: [
       {
         type: String,
-        trim: true,
       },
     ],
     promotionId: { type: mongoose.Schema.Types.ObjectId, ref: "promotion" },

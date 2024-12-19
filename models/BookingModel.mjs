@@ -25,7 +25,7 @@ const bookingSchema = new mongoose.Schema(
     ],
     paymentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "payments",
+      ref: "payment",
       default: null,
     },
     bookingStartDate: { type: Date, required: true },

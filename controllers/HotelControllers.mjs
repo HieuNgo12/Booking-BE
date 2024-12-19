@@ -8,6 +8,21 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const deleteHotel = async (req, res, next) => {
+  try {
+    const hotelId = req.params.hotelId;
+    // await HotelModel.findByIdAndDelete({ hotelId });
+    return res.status(200).json({
+      message: "Delete hotel successful",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const getHotel = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -16,6 +31,7 @@ const getHotel = async (req, res, next) => {
     const total = await HotelModel.countDocuments();
 
     const hotels = await HotelModel.find()
+      .populate("reviewId")
       .skip((page - 1) * pageSize)
       .limit(pageSize);
 
@@ -49,26 +65,47 @@ const getAllHotel = async (req, res, next) => {
 
 const editHotel = async (req, res, next) => {
   try {
-    const getHotel = await HotelModel.find();
-    return res.status(200).json({
-      message: "Get hotel successful",
-      data: getHotel,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-};
-
-const deleteHotel = async (req, res, next) => {
-  try {
     const hotelId = req.params.hotelId;
-    await HotelModel.findByIdAndDelete({ hotelId });
-    return res.status(200).json({
-      message: "Delete hotel successful",
+    const avatar = req.files?.avatar?.[0];
+
+    const hotel = await HotelModel.findById(hotelId);
+
+    if (!hotel) {
+      return res.status(400).json({
+        message: "Hotel is not found!",
+      });
+    }
+
+    const update = await HotelModel.findByIdAndUpdate(hotelId, req.body, {
+      new: true,
     });
+
+    if (avatar) {
+      const dataUrl = `data:${avatar.mimetype};base64,${avatar.buffer.toString(
+        "base64"
+      )}`;
+
+      const result = await cloudinary.uploader.upload(dataUrl, {
+        public_id: `${update._id}_avatar`,
+        resource_type: "auto",
+        folder: `booking/hotel/${update._id}`,
+        overwrite: true,
+      });
+
+      if (result) {
+        update.imgHotel.avatar = result.secure_url;
+        await update.save();
+        return res.status(200).json({
+          message: "Update hotel successful",
+        });
+      }
+    }
+
+    if (update) {
+      return res.status(200).json({
+        message: "Update hotel successful",
+      });
+    }
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",
@@ -86,7 +123,7 @@ const searchHotel = () => {
 const addHotel = async (req, res, next) => {
   try {
     const avatar = req.files?.avatar?.[0];
-    const listFile = req.files?.files || [];
+    const listFile = req.files?.arrImg || [];
     const listImg = [];
     const hotel = await HotelModel.create(req.body);
 
