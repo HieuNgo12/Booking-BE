@@ -6,6 +6,7 @@ import {
   getTour,
   deleteTour,
   editTour,
+  getAllTour,
 } from "../controllers/ToursControllers.mjs";
 import { isLogInAdmin, validateToken } from "../middleware/validate.mjs";
 
@@ -45,6 +46,8 @@ router.post(
 
 //user
 router.get("/api/v1/get-tour", getTour);
+
+router.get("/api/v1/get-all-tour", getAllTour);
 
 router.get("/api/v1/search-tour", searchTour);
 export default router;

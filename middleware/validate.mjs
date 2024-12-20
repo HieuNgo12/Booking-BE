@@ -17,7 +17,7 @@ const isLogInUser = async (req, res, next) => {
 
 const isLogInAdmin = async (req, res, next) => {
   const checkRole = await AdminModel.findById(req.user.id);
-  if (checkRole.role === "admin") {
+  if (checkRole.role === "admin" || checkRole.role === "super") {
     next();
   } else {
     return res.status(403).json({
@@ -27,11 +27,13 @@ const isLogInAdmin = async (req, res, next) => {
 };
 
 const isLogInSuper = async (req, res, next) => {
-  const checkRole = await UserModel.findById(req.user.id);
-  if (userRole.role === "super") {
+  const checkRole = await AdminModel.findById(req.user.id);
+  if (checkRole.role === "super") {
     next();
   } else {
-    return res.status(403).send("Forbidden");
+    return res.status(403).json({
+      message: "Forbidden. Only for super",
+    });
   }
 };
 

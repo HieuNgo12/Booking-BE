@@ -702,7 +702,7 @@ const updateProfileUser = async (req, res, next) => {
     const userId = req.params.userId;
     const file = req.file;
 
-    console.log(req.body)
+    console.log(req.body);
     let getUser = await UserModel.findById(userId);
 
     if (!getUser) {
@@ -757,7 +757,23 @@ const updateProfileUser = async (req, res, next) => {
   }
 };
 
+const deleteUser = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    await UserModel.findByIdAndDelete({ userId });
+    return res.status(200).json({
+      message: "Delete user successful",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 export {
+  deleteUser,
   logIn,
   signUp,
   resetPassword,

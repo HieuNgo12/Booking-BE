@@ -9,11 +9,19 @@ import {
   getBooking,
   getBookingByUserId,
   getBookingByBookingId,
+  adminGetBookingByUserId,
 } from "../controllers/BookingControllers.mjs";
 const router = express.Router();
 
 //admin
 router.get("/api/v1/get-booking", validateToken, isLogInAdmin, getBooking);
+
+router.get(
+  "/api/v1/admin-get-booking-by-userId/:userId",
+  validateToken,
+  isLogInAdmin,
+  adminGetBookingByUserId
+);
 
 //user
 router.get(

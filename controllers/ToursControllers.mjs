@@ -31,8 +31,26 @@ const getTour = async (req, res, next) => {
 
     const total = await TourModel.countDocuments();
     const getTour = await TourModel.find()
+      .populate("reviewId")
       .skip((page - 1) * pageSize)
       .limit(pageSize);
+
+    return res.status(200).json({
+      message: "Get tour successful",
+      data: getTour,
+      total: total,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const getAllTour = async (req, res, next) => {
+  try {
+    const getTour = await TourModel.find().populate("reviewId");
 
     return res.status(200).json({
       message: "Get tour successful",
@@ -168,4 +186,4 @@ const addTour = async (req, res, next) => {
   }
 };
 
-export { searchTour, addTour, getTour, deleteTour, editTour };
+export { searchTour, addTour, getTour, deleteTour, editTour, getAllTour };

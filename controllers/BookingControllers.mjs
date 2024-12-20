@@ -60,6 +60,33 @@ const getBooking = async (req, res, next) => {
   }
 };
 
+const adminGetBookingByUserId = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const getBooking = await BookingModel.find({ userId: userId })
+      .populate("userId")
+      .populate("objectId");
+
+    if (!getBooking || getBooking.length === 0) {
+      return res.status(404).json({
+        message: "No bookings found for this user",
+      });
+    }
+
+    if (getBooking) {
+      return res.status(200).json({
+        message: "Get booking successful",
+        data: getBooking,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const getBookingByUserId = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -147,4 +174,10 @@ const createBooking = async (req, res, next) => {
   }
 };
 
-export { getBookingByUserId, createBooking, getBookingByBookingId, getBooking };
+export {
+  adminGetBookingByUserId,
+  getBookingByUserId,
+  createBooking,
+  getBookingByBookingId,
+  getBooking,
+};

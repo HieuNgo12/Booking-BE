@@ -10,6 +10,7 @@ import {
   daily,
   bookingMonthly,
   updateProfileUser,
+  deleteUser,
 } from "../controllers/AdminControllers.mjs";
 import {
   isLogInAdmin,
@@ -38,6 +39,13 @@ router.patch(
   validateToken,
   isLogInAdmin,
   updateProfileUser
+);
+
+router.delete(
+  "/api/v1/delete-user/:userId",
+  validateToken,
+  isLogInAdmin,
+  deleteUser
 );
 
 router.get("/api/v1/dashboard", validateToken, isLogInAdmin, dashboard);

@@ -11,7 +11,7 @@ cloudinary.config({
 const deleteHotel = async (req, res, next) => {
   try {
     const hotelId = req.params.hotelId;
-    // await HotelModel.findByIdAndDelete({ hotelId });
+    await HotelModel.findByIdAndDelete({ hotelId });
     return res.status(200).json({
       message: "Delete hotel successful",
     });
