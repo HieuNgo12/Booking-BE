@@ -186,4 +186,34 @@ const addTour = async (req, res, next) => {
   }
 };
 
-export { searchTour, addTour, getTour, deleteTour, editTour, getAllTour };
+const getTourById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const tour = await TourModel.findById(id)
+      .populate({
+        path: "reviewId",
+        populate: {
+          path: "userId",
+          select: "userName email",
+        },
+      })
+      .exec();
+    if (!tour) {
+      return res.status(404).json({ message: "Tour not found" });
+    }
+    res.json(tour);
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "Error fetching tour by ID" });
+  }
+};
+
+export {
+  searchTour,
+  addTour,
+  getTour,
+  deleteTour,
+  editTour,
+  getAllTour,
+  getTourById,
+};
