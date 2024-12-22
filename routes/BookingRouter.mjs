@@ -5,11 +5,13 @@ import {
   validateToken,
 } from "../middleware/validate.mjs";
 import {
-  createBooking,
   getBooking,
+  updateContact,
+  createBooking,
   getBookingByUserId,
   getBookingByBookingId,
   adminGetBookingByUserId,
+  adminGetBookingByBookingId,
 } from "../controllers/BookingControllers.mjs";
 const router = express.Router();
 
@@ -21,6 +23,20 @@ router.get(
   validateToken,
   isLogInAdmin,
   adminGetBookingByUserId
+);
+
+router.patch(
+  "/api/v1/update-contact/:bookingId",
+  validateToken,
+  isLogInAdmin,
+  updateContact
+);
+
+router.get(
+  "/api/v1/admin-get-booking/:bookingId",
+  validateToken,
+  isLogInAdmin,
+  adminGetBookingByBookingId
 );
 
 //user

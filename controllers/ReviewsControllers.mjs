@@ -10,6 +10,21 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const deleteReview = async (req, res, next) => {
+  try {
+    const reviewId = req.params.reviewId;
+    await ReviewModel.findByIdAndDelete({ reviewId });
+    return res.status(200).json({
+      message: "Delete review successful",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const getReviewHotelId = async (req, res, next) => {
   try {
     const hotelId = req.params.hotelId;
@@ -44,7 +59,9 @@ const getReviewTourId = async (req, res, next) => {
 
 const getAllReview = async (req, res, next) => {
   try {
-    const review = await ReviewModel.find().populate("objectId");
+    const review = await ReviewModel.find()
+      .populate("objectId")
+      .populate("userId");
     return res.status(200).json({
       message: "Get review successfully",
       data: review,
@@ -72,4 +89,10 @@ const createReview = async (req, res, next) => {
   }
 };
 
-export { getAllReview, createReview, getReviewHotelId, getReviewTourId };
+export {
+  getAllReview,
+  createReview,
+  getReviewHotelId,
+  getReviewTourId,
+  deleteReview,
+};

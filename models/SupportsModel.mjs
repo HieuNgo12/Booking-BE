@@ -23,19 +23,11 @@ const supportSchema = new mongoose.Schema(
       default: false,
     },
     reply: {
-      adminId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "admin",
-        default: null,
-      },
       timeReply: {
         type: Date,
+        default: Date.now, 
       },
       messageReply: {
-        type: String,
-        trim: true,
-      },
-      note: {
         type: String,
         trim: true,
       },
@@ -50,6 +42,10 @@ const supportSchema = new mongoose.Schema(
       type: String,
       enum: ["open", "in-progress", "closed"],
       default: "open",
+    },
+    adminId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "admin",
     },
   },
   { timestamps: true }

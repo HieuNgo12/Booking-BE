@@ -37,6 +37,20 @@ const isLogInSuper = async (req, res, next) => {
   }
 };
 
+const checkRole = async (req, res, next) => {
+  try {
+    const checkRole = await AdminModel.findById(req.user.id);
+    return res.status(200).json({
+      role: checkRole.role,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const validateToken = async (req, res, next) => {
   try {
     const token = req.cookies.accessToken;
@@ -75,8 +89,7 @@ const refreshToken = async (req, res, next) => {
       {
         id: checkInfo.id,
         email: checkInfo.email,
-        isEmailVerified: checkInfo.isEmailVerified,
-        role: checkInfo.role,
+        avatar: checkInfo.avatar,
       },
       process.env.KEY_JWT,
       {
@@ -117,8 +130,7 @@ const refreshTokenAdmin = async (req, res, next) => {
       {
         id: checkInfo.id,
         email: checkInfo.email,
-        isEmailVerified: checkInfo.isEmailVerified,
-        role: checkInfo.role,
+        avatar: checkInfo.avatar,
       },
       process.env.KEY_JWT,
       {
@@ -195,6 +207,7 @@ const refreshTokenVer2 = async (req, res, next) => {
 };
 
 export {
+  checkRole,
   validateToken,
   isLogInUser,
   isLogInAdmin,

@@ -8,6 +8,11 @@ const router = express.Router();
 
 router.get("/api/v1/support", validateToken, isLogInAdmin, getAllSupport);
 
-router.post("/api/v1/reply-support", validateToken, isLogInAdmin, replySupport);
+router.patch(
+  "/api/v1/reply-support/:supportId",
+  validateToken,
+  isLogInAdmin,
+  replySupport
+);
 
 export default router;

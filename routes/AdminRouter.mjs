@@ -11,21 +11,34 @@ import {
   bookingMonthly,
   updateProfileUser,
   deleteUser,
+  getAllAdmin,
+  deleteAdmin,
+  verifyEmail,
 } from "../controllers/AdminControllers.mjs";
 import {
   isLogInAdmin,
+  isLogInSuper,
   refreshToken,
   refreshTokenAdmin,
   validateToken,
+  checkRole,
 } from "../middleware/validate.mjs";
 
 const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+//super
+router.get("/api/v1/check-role", validateToken, isLogInSuper, checkRole);
+
+router.post("/api/v1/admin-sign-up", validateToken, isLogInSuper, signUp);
+
+//admin
 router.post("/api/v1/admin-log-in", logIn);
 
-router.post("/api/v1/admin-sign-up", signUp);
+router.patch("/api/v1/admin-verify-email", verifyEmail);
+
+router.get("/api/v1/get-all-admin", getAllAdmin);
 
 router.post("/api/v1/admin-forgot-password", forgotPassword);
 
@@ -46,6 +59,13 @@ router.delete(
   validateToken,
   isLogInAdmin,
   deleteUser
+);
+
+router.delete(
+  "/api/v1/delete-admin/:adminId",
+  validateToken,
+  isLogInAdmin,
+  deleteAdmin
 );
 
 router.get("/api/v1/dashboard", validateToken, isLogInAdmin, dashboard);

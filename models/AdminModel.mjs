@@ -4,9 +4,10 @@ const adminSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    phone: { type: String, required: false, unique: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
+    workplace: { type: String, required: true },
+    phone: { type: String, required: false },
     gender: { type: Boolean, required: false },
     DOB: { type: Date, required: false },
     address: {
@@ -15,7 +16,6 @@ const adminSchema = new mongoose.Schema(
       ward: { type: String, default: null },
       district: { type: String, default: null },
       city: { type: String, default: null },
-      zipcode: { type: String, default: null },
     },
     zipcode: { type: String, default: null },
     avatar: {
@@ -23,7 +23,7 @@ const adminSchema = new mongoose.Schema(
       default:
         "https://res.cloudinary.com/dsxlqhn53/image/upload/booking/user/default.jpg",
     },
-    idCard: { type: String, unique: true, default: null },
+    idCard: { type: String, required: false },
     isIdCardNumberVerified: { type: Boolean, default: false },
     failedLoginAttempts: { type: Number, default: 0 },
     timeSuspended: { type: Date, default: null },

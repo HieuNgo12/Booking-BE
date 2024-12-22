@@ -51,7 +51,8 @@ const bookingSchema = new mongoose.Schema(
         price: { type: Number },
       },
     ],
-    bookingReference: { type: String, unique: true, required: true },
+    promotionId: { type: mongoose.Schema.Types.ObjectId, ref: "promotion" },
+    bookingReference: { type: String },
     internalNotes: { type: String, default: null },
   },
   { timestamps: true }

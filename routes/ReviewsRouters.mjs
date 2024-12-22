@@ -10,6 +10,7 @@ import {
   getAllReview,
   getReviewHotelId,
   getReviewTourId,
+  deleteReview
 } from "../controllers/ReviewsControllers.mjs";
 
 const router = express.Router();
@@ -29,6 +30,13 @@ router.get(
   validateToken,
   isLogInAdmin,
   getReviewTourId
+);
+
+router.delete(
+  "/api/v1/delete-review/:reviewId",
+  validateToken,
+  isLogInAdmin,
+  deleteReview
 );
 
 router.get("/api/v1/get-reviews", validateToken, isLogInAdmin, getAllReview);

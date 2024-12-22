@@ -15,6 +15,7 @@ import SupportModel from "../models/SupportsModel.mjs";
 import PromotionModel from "../models/PromotionsModel.mjs";
 import moment from "moment"; // Thư viện moment để xử lý thời gian
 import { v2 as cloudinary } from "cloudinary";
+import OtpModel from "../models/OtpModel.mjs";
 
 //hashPassword
 const saltRounds = 10;
@@ -30,6 +31,22 @@ const transporter = nodemailer.createTransport({
     pass: process.env.PASS_EMAIL,
   },
 });
+
+const getAllAdmin = async (req, res, next) => {
+  try {
+    const admins = await AdminModel.find();
+    const adminOnly = admins.filter((item) => item.role === "admin");
+    return res.status(200).json({
+      message: "Get admin successful",
+      data: adminOnly,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
 
 const logIn = async (req, res, next) => {
   try {
@@ -110,7 +127,6 @@ const logIn = async (req, res, next) => {
     }
 
     if (checkEmail.verificationStatus.emailVerified === false) {
-      console.log("check");
       const checkOTP = await OtpModel.findOne({
         email: email,
         purpose: "verifyEmail",
@@ -184,7 +200,10 @@ const logIn = async (req, res, next) => {
       }
     }
 
-    if (hashingPasswordLogin && checkEmail.role === "admin") {
+    if (
+      (hashingPasswordLogin && checkEmail.role === "admin") ||
+      (hashingPasswordLogin && checkEmail.role === "super")
+    ) {
       (checkEmail.logInAttempt = 5), (checkEmail.timeSuspended = null);
       await checkEmail.save();
 
@@ -237,7 +256,8 @@ const logIn = async (req, res, next) => {
 
 const signUp = async (req, res, next) => {
   try {
-    let { email, password, firstName, lastName, confirmPassword } = req.body;
+    let { email, password, firstName, lastName, confirmPassword, workplace } =
+      req.body;
     if (!firstName) {
       return res.status(400).json({
         message: "First name is required!",
@@ -337,6 +357,7 @@ const signUp = async (req, res, next) => {
       password: hashPassword,
       firstName: firstName,
       lastName: lastName,
+      workplace: workplace,
     });
 
     if (newUser) {
@@ -368,6 +389,70 @@ const signUp = async (req, res, next) => {
     } else {
       return res.status(400).json({
         message: "Create account is failed!",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const verifyEmail = async (req, res, next) => {
+  try {
+    let otp = req.body.otp;
+    if (!otp) {
+      return res.status(400).json({
+        message: "OTP is required!",
+      });
+    }
+    otp = otp.trim();
+
+    const checkOtp = await OtpModel.findOne({
+      otp: otp,
+      purpose: "verifyEmail",
+    });
+
+    if (!checkOtp) {
+      return res.status(400).json({
+        message: "OTP is incorrect! Please check it again!",
+      });
+    }
+
+    const user = await AdminModel.findOne({ email: checkOtp.email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User is not found!",
+      });
+    }
+
+    user.verificationStatus.emailVerified = true;
+    await user.save();
+
+    const deleteOTP = await OtpModel.findOneAndDelete({
+      otp: otp,
+      purpose: "verifyEmail",
+    });
+
+    if (user && deleteOTP) {
+      const mailOptions = {
+        from: "info@test.com",
+        to: checkOtp.email,
+        subject: "Your email is verify!",
+        text: `Your email is verify! Now you can acccess!`,
+      };
+
+      await transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          throw new Error("Error sending email");
+        } else {
+          console.log("Email sent: " + info.response);
+          return res.status(200).json({
+            message: "Your email is verify!",
+          });
+        }
       });
     }
   } catch (error) {
@@ -772,8 +857,26 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+const deleteAdmin = async (req, res, next) => {
+  try {
+    const adminId = req.params.adminId;
+    // await AdminModel.findByIdAndDelete({ adminId });
+    return res.status(200).json({
+      message: "Delete user successful",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 export {
+  verifyEmail,
   deleteUser,
+  deleteAdmin,
+  getAllAdmin,
   logIn,
   signUp,
   resetPassword,
