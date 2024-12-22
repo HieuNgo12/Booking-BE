@@ -9,6 +9,7 @@ import {
   getBooking,
   getBookingByUserId,
   getBookingByBookingId,
+  getBookingByBookingID,
 } from "../controllers/BookingControllers.mjs";
 const router = express.Router();
 
@@ -36,5 +37,7 @@ router.post(
   isLogInUser,
   createBooking
 );
+router.get("/api/v1/getBookingById/:bookingId", getBookingByBookingID);
+router.post("/api/v1/createBookingWithoutAuthen", createBooking);
 
 export default router;

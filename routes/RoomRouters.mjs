@@ -1,6 +1,11 @@
 import express from "express";
 import multer from "multer";
-import { createRoom, getRoomById, getRoomList } from "../controllers/RoomControllers.mjs";
+import {
+  createRoom,
+  getRoomById,
+  getRoomList,
+  searchRoom,
+} from "../controllers/RoomControllers.mjs";
 import { isLogInAdmin, validateToken } from "../middleware/validate.mjs";
 
 const router = express.Router();
@@ -20,5 +25,6 @@ router.post(
 
 router.get("/api/v1/getRoomById/:roomId", getRoomById);
 router.get("/api/v1/getRoomList", getRoomList);
+router.post("/api/v1/searchRoom", searchRoom);
 
 export default router;

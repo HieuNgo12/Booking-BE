@@ -159,7 +159,22 @@ const getHotelById = async (req, res, next) => {
     });
   }
 };
-
+const getHotelList = async (req, res, next) => {
+  try {
+    const hotels = await HotelModel.find()
+      .populate("roomId").populate("reviewId");
+      
+    return res.status(200).json({
+      message: "Get all hotel successful",
+      data: hotels,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
 export {
   searchHotel,
   addHotel,
@@ -168,4 +183,5 @@ export {
   editHotel,
   deleteHotel,
   getHotelById,
+  getHotelList,
 };
