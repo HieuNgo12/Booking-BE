@@ -96,6 +96,8 @@ router.post(
   sentEmailSupport
 );
 
+
+//admin
 router.get("/api/v1/get-all-users", validateToken, isLogInAdmin, getAllUsers);
 
 export default router;

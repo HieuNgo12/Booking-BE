@@ -18,37 +18,34 @@ const supportSchema = new mongoose.Schema(
         trim: true,
       },
     ],
+    statusReply: {
+      type: Boolean,
+      default: false,
+    },
     reply: {
-      adminId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "admin",
-        default: null,
-      },
       timeReply: {
         type: Date,
+        default: Date.now, 
       },
-      statusReply: {
-        type: String,
-        enum: ["pending", "replied", "resolved"],
-        default: "pending",
-      },
-      text: {
+      messageReply: {
         type: String,
         trim: true,
       },
-      note: {
-        type: String,
-        trim: true,
-      },
-      imgSupport: {
-        type: String,
-        trim: true,
-      },
+      imgSupport: [
+        {
+          type: String,
+          trim: true,
+        },
+      ],
     },
     status: {
       type: String,
       enum: ["open", "in-progress", "closed"],
       default: "open",
+    },
+    adminId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "admin",
     },
   },
   { timestamps: true }

@@ -6,33 +6,40 @@ const reviewSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
-      default: null,
     },
-    hotelId: {
+    objectId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "hotel",
-      default: null,
+      required: true,
+      refPath: "objectType",
     },
-    tourId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "tour",
-      default: null,
+    objectType: {
+      type: String,
+      required: true,
+      enum: ["hotel", "tour", "flight"],
     },
     objectType: { type: String, required: true },
-    comment: { type: String, required: true },
-    startDate: { type: Date, default: null },
-    endDate: { type: Date, default: null },
-    rating: { type: String, default: null },
-    img: { type: String, default: null },
-    status: { type: String, default: null },
-    adminId: { type: Number, default: null },
-    replyText: { type: String, required: true },
-    isReply: { type: Boolean, default: false },
-    imgReply: { type: String, default: null },
-    statusReply: { type: String, default: null },
+    comment: { type: String, required: true, default: null },
+    rating: { type: String, required: true, default: null },
+    imgReview: [{ type: String, default: null }],
+    status: {
+      type: String,
+      default: "pendding",
+      enum: ["pendding", "active", "suspended", "deleted"],
+    },
+    replayInfo: {
+      adminId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "admin",
+        default: null,
+      },
+      replyText: { type: String, default: null },
+      isReply: { type: Boolean, default: false },
+      imgReply: [{ type: String, default: null }],
+    },
   },
   { timestamps: true }
 );
 
-const Review = mongoose.model("review", reviewSchema);
-export default Review;
+const ReviewModel = mongoose.model("review", reviewSchema);
+
+export default ReviewModel;

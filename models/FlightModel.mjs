@@ -2,27 +2,19 @@ import mongoose from "mongoose";
 
 const flightSchema = new mongoose.Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
-      required: true,
-    },
-    tourId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "tour",
-      required: true,
-    },
     airlineName: { type: String, required: true },
+    flightNumber: { type: String, required: true},
     availableSeats: { type: Number, required: true },
     departureAirport: { type: String, required: true },
     destinationAirport: { type: String, required: true },
     departureDate: { type: Date, required: true },
-    destinationDate: { type: Date, required: true },
+    destinationDate: { type: Date, required: false },
     price: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["scheduled", "cancelled", "completed"],
+      enum: ["scheduled", "cancelled", "completed", "delayed"],
       required: true,
+      default: "scheduled",
     },
   },
   { timestamps: true }

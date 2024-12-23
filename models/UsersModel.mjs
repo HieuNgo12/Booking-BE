@@ -70,7 +70,7 @@ const userShema = new mongoose.Schema(
     },
     language: {
       type: String,
-      enum: ["English", "VietNam", "Japan"],
+      enum: ["English", "VietNam", "Japan", "French"],
       default: "English",
     },
     loyaltyPoints: {
