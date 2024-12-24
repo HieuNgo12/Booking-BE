@@ -5,6 +5,17 @@ import nodemailer from "nodemailer";
 import otpGenerator from "otp-generator";
 import twilio from "twilio";
 import AdminModel from "../models/AdminModel.mjs";
+import PaymentModel from "../models/PaymentModel.mjs";
+import UserModel from "../models/UsersModel.mjs";
+import BookingModel from "../models/BookingModel.mjs";
+import HotelModel from "../models/HotelModel.mjs";
+import TourModel from "../models/TourModel.mjs";
+import ReviewModel from "../models/ReviewsModel.mjs";
+import SupportModel from "../models/SupportsModel.mjs";
+import PromotionModel from "../models/PromotionsModel.mjs";
+import moment from "moment"; // Thư viện moment để xử lý thời gian
+import { v2 as cloudinary } from "cloudinary";
+import OtpModel from "../models/OtpModel.mjs";
 
 //hashPassword
 const saltRounds = 10;
@@ -20,6 +31,22 @@ const transporter = nodemailer.createTransport({
     pass: process.env.PASS_EMAIL,
   },
 });
+
+const getAllAdmin = async (req, res, next) => {
+  try {
+    const admins = await AdminModel.find();
+    const adminOnly = admins.filter((item) => item.role === "admin");
+    return res.status(200).json({
+      message: "Get admin successful",
+      data: adminOnly,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
 
 const logIn = async (req, res, next) => {
   try {
@@ -100,7 +127,6 @@ const logIn = async (req, res, next) => {
     }
 
     if (checkEmail.verificationStatus.emailVerified === false) {
-      console.log("check");
       const checkOTP = await OtpModel.findOne({
         email: email,
         purpose: "verifyEmail",
@@ -174,7 +200,10 @@ const logIn = async (req, res, next) => {
       }
     }
 
-    if (hashingPasswordLogin && checkEmail.role === "admin") {
+    if (
+      (hashingPasswordLogin && checkEmail.role === "admin") ||
+      (hashingPasswordLogin && checkEmail.role === "super")
+    ) {
       (checkEmail.logInAttempt = 5), (checkEmail.timeSuspended = null);
       await checkEmail.save();
 
@@ -227,7 +256,8 @@ const logIn = async (req, res, next) => {
 
 const signUp = async (req, res, next) => {
   try {
-    let { email, password, firstName, lastName, confirmPassword } = req.body;
+    let { email, password, firstName, lastName, confirmPassword, workplace } =
+      req.body;
     if (!firstName) {
       return res.status(400).json({
         message: "First name is required!",
@@ -327,6 +357,7 @@ const signUp = async (req, res, next) => {
       password: hashPassword,
       firstName: firstName,
       lastName: lastName,
+      workplace: workplace,
     });
 
     if (newUser) {
@@ -358,6 +389,70 @@ const signUp = async (req, res, next) => {
     } else {
       return res.status(400).json({
         message: "Create account is failed!",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const verifyEmail = async (req, res, next) => {
+  try {
+    let otp = req.body.otp;
+    if (!otp) {
+      return res.status(400).json({
+        message: "OTP is required!",
+      });
+    }
+    otp = otp.trim();
+
+    const checkOtp = await OtpModel.findOne({
+      otp: otp,
+      purpose: "verifyEmail",
+    });
+
+    if (!checkOtp) {
+      return res.status(400).json({
+        message: "OTP is incorrect! Please check it again!",
+      });
+    }
+
+    const user = await AdminModel.findOne({ email: checkOtp.email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User is not found!",
+      });
+    }
+
+    user.verificationStatus.emailVerified = true;
+    await user.save();
+
+    const deleteOTP = await OtpModel.findOneAndDelete({
+      otp: otp,
+      purpose: "verifyEmail",
+    });
+
+    if (user && deleteOTP) {
+      const mailOptions = {
+        from: "info@test.com",
+        to: checkOtp.email,
+        subject: "Your email is verify!",
+        text: `Your email is verify! Now you can acccess!`,
+      };
+
+      await transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          throw new Error("Error sending email");
+        } else {
+          console.log("Email sent: " + info.response);
+          return res.status(200).json({
+            message: "Your email is verify!",
+          });
+        }
       });
     }
   } catch (error) {
@@ -556,4 +651,239 @@ const forgotPassword = async (req, res, next) => {
   }
 };
 
-export { logIn, signUp, resetPassword, forgotPassword };
+const dashboard = async (req, res, next) => {
+  try {
+    // const totalSale = await PaymentModel.find();
+    const totalCustomer = await UserModel.countDocuments();
+    const totalBooking = await BookingModel.countDocuments();
+    const allBooking = await BookingModel.find();
+    const totalHotel = await HotelModel.countDocuments();
+    const totalTour = await TourModel.countDocuments();
+    const totalReview = await ReviewModel.countDocuments();
+    const totalSupport = await SupportModel.countDocuments();
+    const totalPromotion = await PromotionModel.countDocuments();
+
+    const startOfDay = moment().startOf("day").toDate(); // 00:00:00
+    const endOfDay = moment().endOf("day").toDate(); // 23:59:59
+
+    // Truy vấn MongoDB
+    const bookingsToday = await BookingModel.find({
+      createdAt: {
+        $gte: startOfDay, // Lớn hơn hoặc bằng đầu ngày
+        $lt: endOfDay, // Nhỏ hơn cuối ngày
+      },
+    }).sort({ createdAt: -1 }); // Sắp xếp giảm dần để lấy booking mới nhất
+
+    console.log(bookingsToday);
+    return res.status(200).json({
+      totalCustomer: totalCustomer,
+      totalBooking: totalBooking,
+      totalHotel: totalHotel,
+      totalTour: totalTour,
+      totalReview: totalReview,
+      totalSupport: totalSupport,
+      totalPromotion: totalPromotion,
+      bookingsToday: bookingsToday,
+      allBooking: bookingsToday,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const monthly = async (req, res, next) => {
+  try {
+    const data = await BookingModel.aggregate([
+      { $match: { status: { $in: ["confirmed", "completed"] } } },
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
+          totalRevenue: { $sum: "$totalAmount" },
+        },
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
+    ]);
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const daily = async (req, res, next) => {
+  try {
+    const data = await BookingModel.aggregate([
+      {
+        $match: {
+          status: { $in: ["confirmed", "completed"] },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            day: { $dayOfMonth: "$createdAt" },
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
+          dailyRevenue: { $sum: "$totalAmount" },
+        },
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 },
+      },
+    ]);
+
+    // Chuyển dữ liệu sang định dạng FE cần
+    const formattedData = data.map((item) => ({
+      day: `${item._id.year}-${String(item._id.month).padStart(
+        2,
+        "0"
+      )}-${String(item._id.day).padStart(2, "0")}`,
+      totalRevenue: item.dailyRevenue || 0, // Đảm bảo có giá trị
+    }));
+
+    return res.status(200).json(formattedData);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const bookingMonthly = async (req, res, next) => {
+  try {
+    const data = await BookingModel.aggregate([
+      { $match: { status: { $in: ["confirmed", "completed"] } } },
+      { $unwind: "$bookedRoomId" },
+      {
+        $group: {
+          _id: "$bookedRoomId",
+          productRevenue: { $sum: "$totalAmount" },
+          totalBookings: { $sum: 1 },
+        },
+      },
+      { $sort: { productRevenue: -1 } },
+    ]);
+    res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const updateProfileUser = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const file = req.file;
+
+    console.log(req.body);
+    let getUser = await UserModel.findById(userId);
+
+    if (!getUser) {
+      return res.status(400).json({
+        message: "User is found",
+      });
+    }
+
+    let updateUser = await UserModel.findByIdAndUpdate(userId, req.body);
+
+    if (!file) {
+      if (updateUser) {
+        return res.status(200).json({
+          message: "Update information successful!",
+        });
+      }
+    } else {
+      const dataUrl = `data:${file.mimetype};base64,${file.buffer.toString(
+        "base64"
+      )}`;
+      cloudinary.uploader.upload(
+        dataUrl,
+        {
+          public_id: userId,
+          resource_type: "auto",
+          folder: "booking/user",
+          overwrite: true,
+
+          // có thể thêm field folder nếu như muốn tổ chức
+        },
+        async (err, result) => {
+          if (err) {
+            return res
+              .status(500)
+              .json({ error: "File upload failed.", details: err });
+          }
+          if (result) {
+            updateUser.avatar = result.secure_url;
+            await updateUser.save();
+            return res.status(200).json({
+              message: "Update information successful!",
+            });
+          }
+        }
+      );
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    await UserModel.findByIdAndDelete({ userId });
+    return res.status(200).json({
+      message: "Delete user successful",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const deleteAdmin = async (req, res, next) => {
+  try {
+    const adminId = req.params.adminId;
+    // await AdminModel.findByIdAndDelete({ adminId });
+    return res.status(200).json({
+      message: "Delete user successful",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+export {
+  verifyEmail,
+  deleteUser,
+  deleteAdmin,
+  getAllAdmin,
+  logIn,
+  signUp,
+  resetPassword,
+  forgotPassword,
+  dashboard,
+  monthly,
+  daily,
+  bookingMonthly,
+  updateProfileUser,
+};

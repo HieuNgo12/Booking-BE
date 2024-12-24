@@ -17,7 +17,7 @@ const isLogInUser = async (req, res, next) => {
 
 const isLogInAdmin = async (req, res, next) => {
   const checkRole = await AdminModel.findById(req.user.id);
-  if (checkRole.role === "admin") {
+  if (checkRole.role === "admin" || checkRole.role === "super") {
     next();
   } else {
     return res.status(403).json({
@@ -27,19 +27,32 @@ const isLogInAdmin = async (req, res, next) => {
 };
 
 const isLogInSuper = async (req, res, next) => {
-  const checkRole = await UserModel.findById(req.user.id);
-  if (userRole.role === "super") {
+  const checkRole = await AdminModel.findById(req.user.id);
+  if (checkRole.role === "super") {
     next();
   } else {
-    return res.status(403).send("Forbidden");
+    return res.status(403).json({
+      message: "Forbidden. Only for super",
+    });
+  }
+};
+
+const checkRole = async (req, res, next) => {
+  try {
+    const checkRole = await AdminModel.findById(req.user.id);
+    return res.status(200).json({
+      role: checkRole.role,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
   }
 };
 
 const validateToken = async (req, res, next) => {
   try {
-    // const authHeader = req.headers["authorization"];
-    // const token = authHeader.split(" ")[1];
-
     const token = req.cookies.accessToken;
     jwt.verify(token, process.env.KEY_JWT, (err, decoded) => {
       if (err) {
@@ -48,7 +61,6 @@ const validateToken = async (req, res, next) => {
           message: "Unauthorized - Invalid or expired token",
         });
       } else {
-        // console.log(decoded);
         req.user = decoded;
         next();
       }
@@ -77,8 +89,7 @@ const refreshToken = async (req, res, next) => {
       {
         id: checkInfo.id,
         email: checkInfo.email,
-        isEmailVerified: checkInfo.isEmailVerified,
-        role: checkInfo.role,
+        avatar: checkInfo.avatar,
       },
       process.env.KEY_JWT,
       {
@@ -119,8 +130,7 @@ const refreshTokenAdmin = async (req, res, next) => {
       {
         id: checkInfo.id,
         email: checkInfo.email,
-        isEmailVerified: checkInfo.isEmailVerified,
-        role: checkInfo.role,
+        avatar: checkInfo.avatar,
       },
       process.env.KEY_JWT,
       {
@@ -197,6 +207,7 @@ const refreshTokenVer2 = async (req, res, next) => {
 };
 
 export {
+  checkRole,
   validateToken,
   isLogInUser,
   isLogInAdmin,

@@ -17,17 +17,21 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+//user
+
 router.get("/api/v1/get-hotel", getHotel);
 
 router.get("/api/v1/get-all-hotel", getAllHotel);
 
 router.get("/api/v1/search-hotel", searchHotel);
 
+//admin
+
 router.post(
   "/api/v1/create-hotel",
   upload.fields([
     { name: "avatar", maxCount: 1 }, // Một avatar bắt buộc
-    { name: "files", maxCount: 10 }, // Mảng file tùy ý (tối đa 10 file)
+    { name: "arrImg", maxCount: 10 }, // Mảng file tùy ý (tối đa 10 file)
   ]),
   validateToken,
   isLogInAdmin,
@@ -36,6 +40,10 @@ router.post(
 
 router.patch(
   "/api/v1/edit-hotel/:hotelId",
+  upload.fields([
+    { name: "avatar", maxCount: 1 }, // Một avatar bắt buộc
+    { name: "arrImg", maxCount: 10 }, // Mảng file tùy ý (tối đa 10 file)
+  ]),
   validateToken,
   isLogInAdmin,
   editHotel

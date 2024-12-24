@@ -20,6 +20,21 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const deleteFlight = async (req, res, next) => {
+  try {
+    const flightId = req.params.flightId;
+    await FlightModel.findByIdAndDelete({ flightId });
+    return res.status(200).json({
+      message: "Delete Flight successful",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const getFlight = async (req, res, next) => {
   try {
     const getFlight = await FlightModel.find();
@@ -37,10 +52,8 @@ const getFlight = async (req, res, next) => {
 
 const createFlight = async (req, res, next) => {
   try {
-    // const userId = req.user.id;
-    // const createBooking = BookingModel.create(req.body, { userId: userId });
-    const createBooking = await FlightModel.create(req.body);
-    if (createBooking) {
+    const createFlight = await FlightModel.create(req.body);
+    if (createFlight) {
       return res.status(200).json({
         message: "Create flight successful",
       });
@@ -53,4 +66,34 @@ const createFlight = async (req, res, next) => {
   }
 };
 
-export { getFlight, createFlight };
+const editFlight = async (req, res, next) => {
+  try {
+    const flightId = req.params.flightId;
+
+    console.log(req.body);
+    const flight = await FlightModel.findById(flightId);
+
+    if (!flight) {
+      return res.status(400).json({
+        message: "Flight is not found!",
+      });
+    }
+
+    const update = await FlightModel.findByIdAndUpdate(flightId, req.body, {
+      new: true,
+    });
+
+    if (update) {
+      return res.status(200).json({
+        message: "Update flight successful",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+export { getFlight, createFlight, editFlight, deleteFlight };
