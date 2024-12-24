@@ -9,6 +9,7 @@ import {
   deleteHotel,
   getHotelById,
   getHotelList,
+  getHotelListByQuery,
 } from "../controllers/HotelControllers.mjs";
 import { isLogInAdmin, validateToken } from "../middleware/validate.mjs";
 
@@ -50,9 +51,13 @@ router.get(
   "/api/v1/hotel/:hotelId",
   getHotelById
 );
-router.get(
+router.post(
   "/api/v1/getHotelList",
   getHotelList
+);
+router.post(
+  "/api/v1/getHotelListByQuery",
+  getHotelListByQuery
 );
 
 export default router;

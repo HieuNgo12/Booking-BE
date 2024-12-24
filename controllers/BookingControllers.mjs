@@ -131,19 +131,13 @@ const getBookingByBookingId = async (req, res, next) => {
 const createBooking = async (req, res, next) => {
   try {
     // const userId = req.user.id;
-    // const createBooking = BookingModel.create(req.body, { userId: userId });
-    const createBooking = BookingModel.create({
-      objectId: "",
-      bookingStartDate: "",
-      bookingEndDate: "",
-      status:"confirmed",
-      
+    // const createBooking = BookingModel.create(req.body, { userId: userId });'
+    console.log(req.body);
+    const createBooking = await BookingModel.create(req.body);
+    return res.status(200).json({
+      message: "Create booking successful",
+      data: createBooking,
     });
-    if (createBooking) {
-      return res.status(200).json({
-        message: "Create booking successful",
-      });
-    }
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",
@@ -154,7 +148,9 @@ const createBooking = async (req, res, next) => {
 
 const getBookingByBookingID = async (req, res, next) => {
   try {
-    const getBooking = await BookingModel.findOne({ _id: req.params.bookingId });
+    const getBooking = await BookingModel.findOne({
+      _id: req.params.bookingId,
+    });
     console.log(getBooking);
     res.status(200).json({
       mes: "Get Booking Successfully",
