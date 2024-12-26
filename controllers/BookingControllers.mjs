@@ -141,6 +141,40 @@ const adminGetBookingByBookingId = async (req, res, next) => {
     });
   }
 };
+
+const adminGetBookingByRoomId = async (req, res, next) => {
+  try {
+    const roomId = req.params.roomId;
+    const getBooking = await BookingModel.find()
+      .populate("userId")
+      .populate("bookedRoomId");
+
+    const filterRoom = getBooking.filter(
+      (item) =>
+        item.bookedRoomId?._id?.toString() === roomId &&
+        item.objectType === "hotel"
+    );
+
+    if (!filterRoom || filterRoom.length === 0) {
+      return res.status(400).json({
+        message: "No bookings found for this booking",
+      });
+    }
+
+    if (filterRoom) {
+      return res.status(200).json({
+        message: "Get booking successful",
+        data: filterRoom,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const getBookingByBookingId = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -255,6 +289,7 @@ const updateContact = async (req, res, next) => {
 export {
   adminGetBookingByBookingId,
   adminGetBookingByUserId,
+  adminGetBookingByRoomId,
   getBookingByUserId,
   createBooking,
   getBookingByBookingId,

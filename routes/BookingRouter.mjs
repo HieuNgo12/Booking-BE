@@ -12,6 +12,7 @@ import {
   getBookingByBookingId,
   getBookingByBookingID,
   adminGetBookingByUserId,
+  adminGetBookingByRoomId,
   adminGetBookingByBookingId,
 } from "../controllers/BookingControllers.mjs";
 const router = express.Router();
@@ -38,6 +39,13 @@ router.get(
   validateToken,
   isLogInAdmin,
   adminGetBookingByBookingId
+);
+
+router.get(
+  "/api/v1/admin-get-all-booking-by-roomId/:roomId",
+  validateToken,
+  isLogInAdmin,
+  adminGetBookingByRoomId
 );
 
 //user
