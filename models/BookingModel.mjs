@@ -17,12 +17,10 @@ const bookingSchema = new mongoose.Schema(
       required: true,
       enum: ["hotel", "tour", "flight"],
     },
-    bookedRoomId: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "room",
-      },
-    ],
+    bookedRoomId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "room",
+    },
     paymentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "payment",

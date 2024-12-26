@@ -36,7 +36,6 @@ const replySupport = async (req, res, next) => {
     let { messageReply, subject } = req.body;
     const supportId = req.params.supportId;
     const adminId = req.user.id;
-    console.log(adminId);
     const listFile = req.files;
     const listResult = [];
     const listImageCid = [];

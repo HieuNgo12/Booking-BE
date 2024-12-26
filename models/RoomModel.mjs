@@ -6,6 +6,17 @@ const roomSchema = new mongoose.Schema({
     ref: "hotel",
     required: true,
   },
+  bookingId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    refPath: "objectType",
+  },
+  objectType: {
+    type: String,
+    required: true,
+    enum: ["hotel", "tour", "flight"],
+    default: "hotel",
+  },  
   promotionId: { type: mongoose.Schema.Types.ObjectId, ref: "promotion" },
   roomName: {
     type: String,
