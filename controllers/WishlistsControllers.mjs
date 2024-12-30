@@ -1,2 +1,6 @@
-const WishlistsControllers = () => {};
+const WishlistsControllers = () => {
+
+
+};
+
 export default WishlistsControllers;

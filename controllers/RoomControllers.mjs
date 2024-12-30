@@ -1,6 +1,7 @@
 import RoomModel from "../models/RoomModel.mjs";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
+import HotelModel from "../models/HotelModel.mjs";
 
 //cloudary
 cloudinary.config({
@@ -126,6 +127,65 @@ const createRoom = async (req, res, next) => {
   }
 };
 
+const getRoomById = async (req, res, next) => {
+  try {
+    const room = await RoomModel.findOne({ _id: req.params.roomId }).populate(
+      "hotelId"
+    );
+    return res.status(200).json({
+      message: "Successfully get room",
+      data: room,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+const getRoomList = async (req, res, next) => {
+  try {
+    const room = await RoomModel.find({}).populate("hotelId");
+    return res.status(200).json({
+      message: "Successfully get room",
+      data: room,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+const searchRoom = async (req, res, next) => {
+  try {
+    const hotel = await HotelModel.find({
+      "address.city": { $regex: req.body.place },
+    });
+    console.log(hotel[0]._id);
+    let roomList = [];
+    for (let i = 0; i < hotel.length; i++) {
+      const page = req.query.page;
+      const query = req.query.query;
+      let room = await RoomModel.find({ hotelId: hotel[i]._id }).populate(
+        "hotelId"
+      );
+      roomList.push(room);
+    }
+    // console.log(room);
+    // console.log(room);
+    return res.status(200).json({
+      message: "Successfully get room",
+      data: roomList,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const editRoom = async (req, res, next) => {
   try {
     const roomId = req.params.roomId;
@@ -177,4 +237,13 @@ const editRoom = async (req, res, next) => {
   }
 };
 
-export { getRoom, createRoom, getRoomByHotelId, editRoom, deleteRoom };
+export {
+  getRoom,
+  createRoom,
+  getRoomByHotelId,
+  editRoom,
+  deleteRoom,
+  getRoomList,
+  getRoomById,
+  searchRoom,
+};

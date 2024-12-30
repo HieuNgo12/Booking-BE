@@ -2,6 +2,9 @@ import express from "express";
 import multer from "multer";
 import {
   createRoom,
+  getRoomById,
+  getRoomList,
+  searchRoom,
   getRoom,
   editRoom,
   getRoomByHotelId,
@@ -25,6 +28,9 @@ router.post(
   createRoom
 );
 
+router.get("/api/v1/getRoomById/:roomId", getRoomById);
+router.get("/api/v1/getRoomList", getRoomList);
+router.post("/api/v1/searchRoom", searchRoom);
 router.patch(
   "/api/v1/edit-room/:roomId",
   upload.fields([
