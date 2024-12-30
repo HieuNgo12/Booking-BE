@@ -212,6 +212,7 @@ const logIn = async (req, res, next) => {
         email: checkEmail.email,
         firstName: checkEmail.firstName,
         lastName: checkEmail.lastName,
+        avatar: checkEmail.avatar,
       };
 
       const userDataRefreshToken = {
@@ -674,7 +675,6 @@ const dashboard = async (req, res, next) => {
       },
     }).sort({ createdAt: -1 }); // Sắp xếp giảm dần để lấy booking mới nhất
 
-    console.log(bookingsToday);
     return res.status(200).json({
       totalCustomer: totalCustomer,
       totalBooking: totalBooking,
@@ -697,7 +697,30 @@ const dashboard = async (req, res, next) => {
 const monthly = async (req, res, next) => {
   try {
     const data = await BookingModel.aggregate([
-      { $match: { status: { $in: ["confirmed", "completed"] } } },
+      // 1. Chỉ lấy booking có status "confirmed" hoặc "completed"
+      {
+        $match: { status: { $in: ["confirmed", "completed"] } },
+      },
+
+      // 2. Lookup để lấy thông tin Room liên kết với bookedRoomId
+      {
+        $unwind: {
+          path: "$bookedRoomId",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      // 3. Lookup để lấy thông tin User từ userId
+      {
+        $lookup: {
+          from: "user", // Collection User
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+
+      // 4. Nhóm dữ liệu theo tháng và năm
       {
         $group: {
           _id: {
@@ -705,10 +728,16 @@ const monthly = async (req, res, next) => {
             year: { $year: "$createdAt" },
           },
           totalRevenue: { $sum: "$totalAmount" },
+          bookings: { $push: "$$ROOT" }, // Lưu trữ tất cả booking vào mảng
         },
       },
-      { $sort: { "_id.year": 1, "_id.month": 1 } },
+
+      // 5. Sắp xếp dữ liệu theo thời gian
+      {
+        $sort: { "_id.year": 1, "_id.month": 1 },
+      },
     ]);
+
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({

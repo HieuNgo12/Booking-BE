@@ -98,7 +98,7 @@ const refreshToken = async (req, res, next) => {
     );
 
     res.cookie("accessToken", newToken, {
-      httpOnly: true,
+      httpOnly: false,
       path: "/",
       // secure: false,
       // sameSite: "None",
@@ -117,6 +117,7 @@ const refreshToken = async (req, res, next) => {
 const refreshTokenAdmin = async (req, res, next) => {
   try {
     const refreshToken = req.cookies.refreshToken;
+    console.log(refreshToken)
     const decoded = jwtDecode(refreshToken);
     const checkInfo = await AdminModel.findById(decoded.id);
 
@@ -130,6 +131,8 @@ const refreshTokenAdmin = async (req, res, next) => {
       {
         id: checkInfo.id,
         email: checkInfo.email,
+        firstName: checkInfo.firstName,
+        lastName: checkInfo.lastName,
         avatar: checkInfo.avatar,
       },
       process.env.KEY_JWT,
@@ -139,7 +142,7 @@ const refreshTokenAdmin = async (req, res, next) => {
     );
 
     res.cookie("accessToken", newToken, {
-      httpOnly: true,
+      httpOnly: false,
       path: "/",
       // secure: false,
       // sameSite: "None",

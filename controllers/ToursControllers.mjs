@@ -12,7 +12,7 @@ cloudinary.config({
 const deleteTour = async (req, res, next) => {
   try {
     const tourId = req.params.tourId;
-    await TourModel.findByIdAndDelete({ tourId });
+    await TourModel.findByIdAndDelete(tourId);
     return res.status(200).json({
       message: "Delete tour successful",
     });
