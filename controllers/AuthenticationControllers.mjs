@@ -197,6 +197,7 @@ const logIn = async (req, res, next) => {
         email: checkEmail.email,
         firstName: checkEmail.firstName,
         lastName: checkEmail.lastName,
+        avatar: checkEmail.avatar,
       };
 
       const userDataRefreshToken = {
