@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
 const deleteFlight = async (req, res, next) => {
   try {
     const flightId = req.params.flightId;
-    await FlightModel.findByIdAndDelete({ flightId });
+    await FlightModel.findByIdAndDelete(flightId);
     return res.status(200).json({
       message: "Delete Flight successful",
     });

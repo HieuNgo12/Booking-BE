@@ -50,7 +50,7 @@ router.get(
 
 //user
 router.get(
-  "/api/v1/get-booking-by-userId",
+  "/api/v1/get-booking-by-userId/:objectType",
   validateToken,
   isLogInUser,
   getBookingByUserId

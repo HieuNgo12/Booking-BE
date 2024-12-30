@@ -1,5 +1,6 @@
 import HotelModel from "../models/HotelModel.mjs";
 import { v2 as cloudinary } from "cloudinary";
+import RoomModel from "../models/RoomModel.mjs";
 
 //cloudary
 cloudinary.config({
@@ -11,7 +12,8 @@ cloudinary.config({
 const deleteHotel = async (req, res, next) => {
   try {
     const hotelId = req.params.hotelId;
-    await HotelModel.findByIdAndDelete({ hotelId });
+    await RoomModel.deleteMany({ hotelId: hotelId });
+    await HotelModel.findByIdAndDelete(hotelId);
     return res.status(200).json({
       message: "Delete hotel successful",
     });

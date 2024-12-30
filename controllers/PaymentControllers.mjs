@@ -82,8 +82,6 @@ const createPaymentZalo = async (req, res, next) => {
       params.append(key, order[key]);
     }
 
-    console.log(params);
-
     const response = await fetch(config.endpoint, {
       method: "POST",
       headers: {
