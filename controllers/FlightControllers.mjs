@@ -96,4 +96,51 @@ const editFlight = async (req, res, next) => {
   }
 };
 
-export { getFlight, createFlight, editFlight, deleteFlight };
+const searchFlight = async (req, res, next) => {
+  try {
+    const {
+      departureAirport,
+      destinationAirport,
+      departureDate,
+      destinationDate,
+      trip,
+      passengers,
+      classFlight,
+    } = req.query;
+
+    console.log(req.query);
+
+    // console.log(dayjs(departureDate));
+
+    const flight = await FlightModel.find({
+      departureAirport,
+      destinationAirport,
+    });
+
+    console.log(flight);
+
+    const checkSeats = flight.map((item) => item.availableSeats >= passengers);
+
+    const checkClassFlight = flight.find((loop1) => {
+      return loop1.classFlight.includes(classFlight);
+    });
+
+    if (!flight) {
+      return res.status(400).json({
+        message: "Flight is not found!",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Flight is found!",
+      data: flight,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+export { getFlight, createFlight, editFlight, deleteFlight, searchFlight };
