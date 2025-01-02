@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  searchFlight,
   createFlight,
   deleteFlight,
   editFlight,
@@ -9,9 +10,9 @@ import { isLogInAdmin, validateToken } from "../middleware/validate.mjs";
 
 const router = express.Router();
 
-// router.get("/api/v1/search-flight", searchFlight);
-
 router.get("/api/v1/get-flight", getFlight);
+
+router.get("/api/v1/search-flight", searchFlight);
 
 //admin
 router.post("/api/v1/create-flight", validateToken, isLogInAdmin, createFlight);

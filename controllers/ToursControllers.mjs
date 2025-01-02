@@ -119,10 +119,66 @@ const editTour = async (req, res, next) => {
   }
 };
 
-const searchTour = () => {
+const searchTour = async (req, res) => {
   try {
-    const { location, checkIn, checkOut, adults, children, room } = res.query;
-  } catch (error) {}
+    const query = {};
+
+    if (req.query.endDestination) {
+      query["inforLocation.endDestination"] = new RegExp(
+        req.query.endDestination,
+        "i"
+      );
+    }
+
+    if (req.query.startDateBooking) {
+      query.startDateBooking = { $gte: new Date(req.query.startDateBooking) };
+    }
+
+    if (req.query.budget) {
+      query.price = { $lte: parseFloat(req.query.budget) };
+    }
+
+    if (req.query.transportationMethod) {
+      query.transportationMethod = {
+        $eq: req.query.transportationMethod[0],
+      };
+    }
+
+    if (req.query.startDestination) {
+      query["inforLocation.startDestination"] = new RegExp(
+        req.query.startDestination,
+        "i"
+      );
+    }
+
+    //console.log("Mongo query:", query);
+
+    const pageSize = 5;
+    const pageNumber = parseInt(req.query.page || "1");
+    const skip = (pageNumber - 1) * pageSize;
+
+    const tours = await TourModel.find(query).skip(skip).limit(pageSize);
+
+    const total = await TourModel.countDocuments(query);
+    console.log("Tours data:", tours);
+    console.log("Pagination:", {
+      total,
+      page: pageNumber,
+      pages: Math.ceil(total / pageSize),
+    });
+
+    res.json({
+      data: tours,
+      pagination: {
+        total,
+        page: pageNumber,
+        pages: Math.ceil(total / pageSize),
+      },
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
 };
 
 const addTour = async (req, res, next) => {
