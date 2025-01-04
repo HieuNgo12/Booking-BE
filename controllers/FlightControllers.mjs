@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import otpGenerator from "otp-generator";
 import FlightModel from "../models/FlightModel.mjs";
+import dayjs from "dayjs";
 
 //hashPassword
 const saltRounds = 10;
@@ -38,6 +39,21 @@ const deleteFlight = async (req, res, next) => {
 const getFlight = async (req, res, next) => {
   try {
     const getFlight = await FlightModel.find();
+    return res.status(200).json({
+      message: "Get flight successful",
+      data: getFlight,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const getFlightById = async (req, res, next) => {
+  try {
+    const getFlight = await FlightModel.findById(req.params.flightId);
     return res.status(200).json({
       message: "Get flight successful",
       data: getFlight,
@@ -101,31 +117,32 @@ const searchFlight = async (req, res, next) => {
     const {
       departureAirport,
       destinationAirport,
+      passengers,
+      classFlight,
       departureDate,
       destinationDate,
       trip,
-      passengers,
-      classFlight,
     } = req.query;
 
-    console.log(req.query);
-
-    // console.log(dayjs(departureDate));
-
-    const flight = await FlightModel.find({
+    const checkAirport = await FlightModel.find({
       departureAirport,
       destinationAirport,
     });
 
-    console.log(flight);
+    const checkClassFlight = checkAirport.filter((flight) =>
+      flight.classFlight.some(
+        (item) => item.type === classFlight && item.seats >= passengers
+      )
+    );
 
-    const checkSeats = flight.map((item) => item.availableSeats >= passengers);
-
-    const checkClassFlight = flight.find((loop1) => {
-      return loop1.classFlight.includes(classFlight);
+    const dateObject = new Date(departureDate);
+    const checkDepartureDate = checkClassFlight.filter((item) => {
+      const departureDate = item.departureDate.toISOString().split("T")[0];
+      const targetDate = dateObject.toISOString().split("T")[0];
+      return departureDate === targetDate;
     });
 
-    if (!flight) {
+    if (!checkDepartureDate) {
       return res.status(400).json({
         message: "Flight is not found!",
       });
@@ -133,7 +150,7 @@ const searchFlight = async (req, res, next) => {
 
     return res.status(200).json({
       message: "Flight is found!",
-      data: flight,
+      data: checkDepartureDate,
     });
   } catch (error) {
     return res.status(500).json({
@@ -143,4 +160,11 @@ const searchFlight = async (req, res, next) => {
   }
 };
 
-export { getFlight, createFlight, editFlight, deleteFlight, searchFlight };
+export {
+  getFlight,
+  createFlight,
+  editFlight,
+  deleteFlight,
+  searchFlight,
+  getFlightById,
+};

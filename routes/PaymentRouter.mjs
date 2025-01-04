@@ -20,8 +20,8 @@ router.get(
 
 router.post(
   "/api/v1/create-payment",
-  validateToken,
-  isLogInUser,
+  // validateToken,
+  // isLogInUser,
   createPayment
 );
 
@@ -29,6 +29,7 @@ router.post(
   "/api/v1/create-payment-zalo/:bookingId",
   // validateToken,
   // isLogInUser,
+  createPayment,
   createPaymentZalo
 );
 

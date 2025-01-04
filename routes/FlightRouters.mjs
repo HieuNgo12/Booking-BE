@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getFlightById,
   searchFlight,
   createFlight,
   deleteFlight,
@@ -13,6 +14,8 @@ const router = express.Router();
 router.get("/api/v1/get-flight", getFlight);
 
 router.get("/api/v1/search-flight", searchFlight);
+
+router.get("/api/v1/get-flight-by-id/:flightId", getFlightById);
 
 //admin
 router.post("/api/v1/create-flight", validateToken, isLogInAdmin, createFlight);
