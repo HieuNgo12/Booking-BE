@@ -215,17 +215,40 @@ const getBookingByBookingId = async (req, res, next) => {
 const createBooking = async (req, res, next) => {
   try {
     // const userId = req.user.id;
-    // const createBooking = BookingModel.create(req.body, { userId: userId });
-    const createBooking = BookingModel.create({
-      objectId: "",
-      bookingStartDate: "",
-      bookingEndDate: "",
-      status:"confirmed",
-      
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      objectType,
+      objectId,
+      bookingStartDate,
+      bookingEndDate,
+      totalPersons,
+      totalAmount,
+      discount,
+    } = req.body;
+
+    const createBooking = await BookingModel.create({
+      // userId: userId ? userId : null,
+      objectId,
+      objectType,
+      contactInfo: {
+        name: `${firstName} ${lastName}`,
+        email,
+        phone,
+      },
+      bookingStartDate,
+      bookingEndDate,
+      totalAmount,
+      totalPersons,
+      discount,
     });
+
     if (createBooking) {
       return res.status(200).json({
         message: "Create booking successful",
+        data: createBooking,
       });
     }
   } catch (error) {
@@ -238,7 +261,9 @@ const createBooking = async (req, res, next) => {
 
 const getBookingByBookingID = async (req, res, next) => {
   try {
-    const getBooking = await BookingModel.findOne({ _id: req.params.bookingId });
+    const getBooking = await BookingModel.findOne({
+      _id: req.params.bookingId,
+    });
     console.log(getBooking);
     res.status(200).json({
       mes: "Get Booking Successfully",
@@ -248,9 +273,10 @@ const getBookingByBookingID = async (req, res, next) => {
     res.status(500).json({
       mes: "Internal Server Error",
       error: e.message,
+    });
+  }
+};
 
-    })}}
-    
 const updateContact = async (req, res, next) => {
   try {
     const bookingId = req.params.bookingId;

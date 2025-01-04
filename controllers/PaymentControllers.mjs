@@ -10,6 +10,7 @@ import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import qs from "qs";
+import BookingModel from "../models/BookingModel.mjs";
 
 //hashPassword
 const saltRounds = 10;
@@ -28,37 +29,77 @@ const transporter = nodemailer.createTransport({
 
 // zaolo pay sandbox
 const config = {
-  appid: "2554",
-  key1: "sdngKKJmqEMzvh5QQcdD2A9XBSKUNaYn",
-  key2: "trMrHtvjo6myautxDUiAcYsVtaeQ8nhf",
+  appid: "554",
+  key1: "8NdU5pG5R2spGHGhyO99HN1OhD8IQJBn",
+  key2: "uUfsWgfLkRLzq6W2uNXTCxrfxs51auny",
   endpoint: "https://sandbox.zalopay.com.vn/v001/tpe/createorder",
   endpointStatus: "https://sb-openapi.zalopay.vn/v2/query",
 };
 
+const createPayment = async (req, res, next) => {
+  try {
+    const { bookingId } = req.params;
+    const { paymentMethod } = req.body;
+
+    const bookingDetail = await BookingModel.findById(bookingId);
+
+    const dataPayment = {
+      bookingId: bookingDetail._id,
+      amount: bookingDetail.totalAmount,
+      currency: "VND",
+      paymentMethod,
+      payerDetails: bookingDetail.contactInfo,
+      description: `Thanh toán hóa đơn - ${bookingDetail.objectType} - ${
+        bookingDetail._id
+      } - ${new Date()}`,
+    };
+
+    const createPayment = await PaymentModel.create(dataPayment);
+    bookingDetail.paymentId = createPayment._id;
+
+    await bookingDetail.save();
+
+    if (createPayment) {
+      req.paymentId = createPayment._id;
+      req.dataBooking = bookingDetail;
+      next();
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const createPaymentZalo = async (req, res, next) => {
   try {
-    const { amount } = req.body;
-    const { bookingId } = req.params;
+    const paymentId = req.paymentId;
+    const dataBooking = req.dataBooking;
+
+    const dataPayment = await PaymentModel.findById(paymentId);
+
     const embeddata = {
       merchantinfo: "Thanh toán thành công!",
-      // redirecturl: "https://www.youtube.com/",
+      redirecturl: `http://localhost:5173/${dataBooking.objectType}-confirm-page/${dataBooking._id}`,
     };
 
     const items = [{}];
     const transID = Math.floor(Math.random() * 1000000);
     const apptransid = `${moment().format("YYMMDD")}_${transID}`;
+
     const order = {
       appid: config.appid,
       apptransid: apptransid,
       appuser: "demo",
-      apptime: Date.now(), // miliseconds
+      apptime: Date.now(),
       item: JSON.stringify(items),
       embeddata: JSON.stringify(embeddata),
-      amount: amount,
-      description: `ZaloPay Integration Demo - Thanh toán cho đơn hàng : ${bookingId} - Mã thanh toán : ${apptransid}`,
+      amount: dataBooking.totalAmount,
+      description: `ZaloPay Integration Demo - Thanh toán cho đơn hàng : ${dataBooking._id} - Mã thanh toán : ${apptransid}`,
       bankcode: "zalopayapp",
-      callback_url:
-        "https://aedb-42-119-84-109.ngrok-free.app/api/v1/callback-from-zalo",
+      // callback_url:
+      //   "https://aedb-42-119-84-109.ngrok-free.app/api/v1/callback-from-zalo",
     };
 
     const data =
@@ -90,10 +131,29 @@ const createPaymentZalo = async (req, res, next) => {
       body: params.toString(),
     });
 
-    return res.status(200).json({
-      message: "Payment created successfully",
-      data: await response.json(),
-    });
+    const responseData = await response.json();
+
+    if (response.ok) {
+      dataPayment.paymentGatewayDetails.provider = "ZaloPay";
+      dataPayment.paymentGatewayDetails.transactionId = apptransid;
+      await dataPayment.save();
+
+      return res.status(200).json({
+        message: "Payment created successfully",
+        data: responseData,
+      });
+    } else {
+      dataPayment.paymentGatewayDetails.provider = "ZaloPay";
+      dataPayment.paymentGatewayDetails.transactionId = apptransid;
+      dataPayment.status = "failed";
+
+      await dataPayment.save();
+
+      return res.status(200).json({
+        message: "Payment created failed",
+        data: responseData,
+      });
+    }
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",
@@ -179,23 +239,6 @@ const getPaymentByUserId = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const getPayment = PaymentModel.findById(userId);
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-};
-
-const createPayment = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const createPayment = PaymentModel.create(req.body, { userId: userId });
-    if (createPayment) {
-      return res.status(200).json({
-        message: "Create payment successful",
-      });
-    }
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",

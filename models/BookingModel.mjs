@@ -5,11 +5,11 @@ const bookingSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      required: true,
+      // required: true,
     },
     objectId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      // required: true,
       refPath: "objectType",
     },
     objectType: {
