@@ -3,6 +3,7 @@ import express from "express";
 import multer from "multer";
 import {
   applyPromoCode,
+  applyPromotion,
   createPromotion,
   deletePromotion,
   editPromotion,
@@ -44,6 +45,6 @@ router.patch(
 router.post(
   "/api/v1/applyPromo",
 
-  applyPromoCode
+  applyPromotion
 );
 export default router;

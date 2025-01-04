@@ -184,7 +184,12 @@ const getHotelById = async (req, res, next) => {
   try {
     const hotel = await HotelModel.findOne({
       _id: req.params.hotelId,
-    }).populate("roomId");
+    })
+      .populate("roomId")
+      .populate({
+        path: "reviewId",
+        populate: [{ path: "userId" }],
+      });
     return res.status(200).json({
       message: "Get hotel successful",
       data: hotel,
@@ -222,10 +227,13 @@ const getHotelListByQuery = async (req, res, next) => {
     console.log(req.body);
     const page = req.body.page;
     const limit = req.body.limit;
-    const hotels = await HotelModel.find({
-      // "address.city":  req.body.place ,
-    })
+    const place = req.body.place;
+    const bodyQuery = place
+      ? { hotelName: { $regex: place, $options: "i" } }
+      : {};
+    const hotels = await HotelModel.find(bodyQuery)
       .populate("roomId")
+      .populate("reviewId")
       .sort({
         createdAt: -1,
       })

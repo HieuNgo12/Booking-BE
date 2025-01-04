@@ -41,7 +41,7 @@ const createPaymentZalo = async (req, res, next) => {
     const { bookingId } = req.params;
     const embeddata = {
       merchantinfo: "Thanh toán thành công!",
-      // redirecturl: "https://www.youtube.com/",
+      redirecturl: "https://www.youtube.com/",
     };
 
     const items = [{}];
