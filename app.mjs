@@ -7,7 +7,7 @@ import Serverless from "serverless-http";
 import connectToMGDB from "./connection.mjs";
 import HotelRouters from "./routes/HotelRouters.mjs";
 import PromotionsRouters from "./routes/PromotionsRouters.mjs";
-// import TourRouters from "./routes/TourRouters.mjs";
+import TourRouters from "./routes/TourRouters.mjs";
 import ReviewsRouters from "./routes/ReviewsRouters.mjs";
 import WishlistsRouters from "./routes/WishlistsRouters.mjs";
 import UserRouters from "./routes/UsersRouters.mjs";
@@ -51,7 +51,7 @@ const App = async () => {
   app.use("/", PromotionsRouters);
   app.use("/", RoomRouters);
   app.use("/", SupportsRouters);
-  // app.use("/", TourRouters);
+  app.use("/", TourRouters);
   app.use("/", ReviewsRouters);
   app.use("/", UserRouters);
   app.use("/", WishlistsRouters);

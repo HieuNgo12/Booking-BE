@@ -50,7 +50,7 @@ router.get(
 
 //user
 router.get(
-  "/api/v1/get-booking-by-userId",
+  "/api/v1/get-booking-by-userId/:objectType",
   validateToken,
   isLogInUser,
   getBookingByUserId
@@ -65,11 +65,11 @@ router.get(
 
 router.post(
   "/api/v1/create-booking",
-  validateToken,
-  isLogInUser,
+  // validateToken,
+  // isLogInUser,
   createBooking
 );
 router.get("/api/v1/getBookingById/:bookingId", getBookingByBookingID);
-router.post("/api/v1/createBookingWithoutAuthen", createBooking);
+
 
 export default router;
