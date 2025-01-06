@@ -3,14 +3,14 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import otpGenerator from "otp-generator";
-import twilio from "twilio";
+
 import PaymentModel from "../models/PaymentModel.mjs";
 import CryptoJS from "crypto-js"; // npm install crypto-js
 import moment from "moment";
-import { v4 as uuidv4 } from "uuid";
-import axios from "axios";
+import crypto from "crypto";
 import qs from "qs";
 import BookingModel from "../models/BookingModel.mjs";
+// import crypto from "crypto";
 
 //hashPassword
 const saltRounds = 10;
@@ -34,6 +34,15 @@ const config = {
   key2: "uUfsWgfLkRLzq6W2uNXTCxrfxs51auny",
   endpoint: "https://sandbox.zalopay.com.vn/v001/tpe/createorder",
   endpointStatus: "https://sb-openapi.zalopay.vn/v2/query",
+};
+
+// vn pay sandbox
+const configVnpay = {
+  vnp_TmnCode: "1LEJZJ64",
+  vnp_HashSecret: "ADTS0PNZMQJTXHHX9EIP5126EZM90Q0Z",
+  vnp_Url: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
+  vnp_Api: "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction",
+  vnp_ReturnUrl: "http://localhost:8888/order/vnpay_return",
 };
 
 const createPayment = async (req, res, next) => {
@@ -247,65 +256,128 @@ const getPaymentByUserId = async (req, res, next) => {
   }
 };
 
-const createPaymentMomo = async (req, res, next) => {
+function sortObject(obj) {
+  let sorted = {};
+  let keys = Object.keys(obj).sort();
+
+  keys.forEach((key) => {
+    sorted[key] = encodeURIComponent(obj[key]).replace(/%20/g, "+");
+  });
+
+  return sorted;
+}
+
+const createPaymentVnpay = async (req, res, next) => {
   try {
-    const embeddata = {
-      merchantinfo: "embeddata123",
-      redirecturl: "https://www.youtube.com/",
+    const paymentId = req.paymentId;
+    const dataBooking = req.dataBooking;
+
+    const dataPayment = await PaymentModel.findById(paymentId);
+
+    process.env.TZ = "Asia/Ho_Chi_Minh";
+
+    let date = new Date();
+    let createDate = moment(date).format("YYYYMMDDHHmmss");
+
+    let ipAddr =
+      req.headers["x-forwarded-for"] ||
+      req.socket?.remoteAddress ||
+      req.connection?.remoteAddress ||
+      "::1";
+
+    let tmnCode = configVnpay.vnp_TmnCode;
+    let secretKey = configVnpay.vnp_HashSecret;
+    let vnpUrl = configVnpay.vnp_Url;
+    // let returnUrl = configVnpay.vnp_ReturnUrl;
+    let orderId = moment(date).format("DDHHmmss");
+
+    let bankCode = req.body.bankCode || "NCB";
+
+    let locale = "vn";
+    let currCode = "VND";
+
+    let vnp_Params = {
+      vnp_Version: "2.1.0",
+      vnp_Command: "pay",
+      vnp_TmnCode: tmnCode,
+      vnp_Locale: locale,
+      vnp_CurrCode: currCode,
+      vnp_TxnRef: orderId,
+      vnp_OrderInfo: "Thanh toan cho ma GD:" + orderId,
+      vnp_OrderType: "other",
+      vnp_Amount: dataBooking.totalAmount * 100,
+      vnp_ReturnUrl: `http://localhost:5173/${dataBooking.objectType}-confirm-page/${dataBooking._id}`,
+      vnp_IpAddr: ipAddr,
+      vnp_CreateDate: createDate,
     };
 
-    const items = [{}];
-    const transID = Math.floor(Math.random() * 1000000);
-
-    const order = {
-      appid: config.appid,
-      apptransid: `${moment().format("YYMMDD")}_${transID}`,
-      appuser: "demo",
-      apptime: Date.now(), // miliseconds
-      item: JSON.stringify(items),
-      embeddata: JSON.stringify(embeddata),
-      amount: 50000,
-      description: "ZaloPay Integration Demo",
-      bankcode: "zalopayapp",
-      callback_url:
-        "https://f999-115-73-170-7.ngrok-free.app/api/v1/callback-from-zalo",
-    };
-
-    const data =
-      config.appid +
-      "|" +
-      order.apptransid +
-      "|" +
-      order.appuser +
-      "|" +
-      order.amount +
-      "|" +
-      order.apptime +
-      "|" +
-      order.embeddata +
-      "|" +
-      order.item;
-    order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
-
-    const params = new URLSearchParams();
-    for (const key in order) {
-      params.append(key, order[key]);
+    if (bankCode) {
+      vnp_Params["vnp_BankCode"] = bankCode;
     }
 
-    console.log(params);
+    vnp_Params = sortObject(vnp_Params);
 
-    const response = await fetch(config.endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: params.toString(),
-    });
+    let signData = qs.stringify(vnp_Params, { encode: false });
+    let hmac = crypto.createHmac("sha512", secretKey);
+    let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+
+    vnp_Params["vnp_SecureHash"] = signed;
+    vnpUrl += "?" + qs.stringify(vnp_Params, { encode: false });
+
+    dataPayment.paymentGatewayDetails.provider = "VNPay";
+    dataPayment.paymentGatewayDetails.transactionId = orderId;
+    await dataPayment.save();
 
     return res.status(200).json({
-      message: "Payment created successfully",
-      data: await response.json(),
+      message: "Payment created successfull",
+      data: vnpUrl,
     });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const vnpayReturn = async (req, res, next) => {
+  try {
+    let vnp_Params = req.query;
+
+    let secureHash = vnp_Params["vnp_SecureHash"];
+
+    delete vnp_Params["vnp_SecureHash"];
+    delete vnp_Params["vnp_SecureHashType"];
+
+    vnp_Params = sortObject(vnp_Params);
+
+    let tmnCode = configVnpay.vnp_TmnCode;
+    let secretKey = configVnpay.vnp_HashSecret;
+
+    let signData = qs.stringify(vnp_Params, { encode: false });
+
+    let hmac = crypto.createHmac("sha512", secretKey);
+    let signed = hmac.update(new Buffer(signData, "utf-8")).digest("hex");
+
+    // if (secureHash === signed) {
+    //   //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
+
+    //   res.render("success", { code: vnp_Params["vnp_ResponseCode"] });
+    // } else {
+    //   res.render("success", { code: "97" });
+    // }
+
+    if (secureHash === signed) {
+      res.status(200).json({
+        message: "Payment verification successful",
+        code: vnp_Params["vnp_ResponseCode"],
+      });
+    } else {
+      res.status(400).json({
+        message: "Payment verification failed",
+        code: "97",
+      });
+    }
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",
@@ -320,5 +392,6 @@ export {
   createPaymentZalo,
   callBackFromZalo,
   createPayment,
-  createPaymentMomo,
+  createPaymentVnpay,
+  vnpayReturn,
 };

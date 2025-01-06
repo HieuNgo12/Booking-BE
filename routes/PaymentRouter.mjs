@@ -5,7 +5,8 @@ import {
   createPaymentZalo,
   callBackFromZalo,
   createPayment,
-  createPaymentMomo,
+  createPaymentVnpay,
+  vnpayReturn,
 } from "../controllers/PaymentControllers.mjs";
 import { isLogInUser, validateToken } from "../middleware/validate.mjs";
 
@@ -48,10 +49,18 @@ router.post(
 );
 
 router.post(
-  "/api/v1/create-payment-vnpay",
+  "/api/v1/create-payment-vnpay/:bookingId",
   // validateToken,
   // isLogInUser,
-  createPaymentMomo
+  createPayment,
+  createPaymentVnpay
+);
+
+router.get(
+  "/api/v1/vnpay_return",
+  // validateToken,
+  // isLogInUser,
+  vnpayReturn
 );
 
 export default router;
