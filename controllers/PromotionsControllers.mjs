@@ -24,6 +24,30 @@ const getPromotion = async (req, res, next) => {
   }
 };
 
+const checkCode = async (req, res, next) => {
+  try {
+    const { code, objectType } = req.params;
+    console.log(code);
+    console.log(objectType);
+    const promotion = await PromotionModel.findOne({ code, objectType });
+    if (!promotion) {
+      return res.status(400).json({
+        message: "Promotion is not found!",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Promotion is found!",
+      data: promotion,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const deletePromotion = async (req, res, next) => {
   try {
     const promotionId = req.params.promotionId;
@@ -219,4 +243,5 @@ export {
   deletePromotion,
   createPromotion,
   editPromotion,
+  checkCode,
 };
