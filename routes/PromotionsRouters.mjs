@@ -8,6 +8,7 @@ import {
   deletePromotion,
   editPromotion,
   getPromotion,
+  checkCode,
 } from "../controllers/PromotionsControllers.mjs";
 import { isLogInAdmin, validateToken } from "../middleware/validate.mjs";
 
@@ -16,6 +17,8 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 router.get("/api/v1/get-promotion", getPromotion);
+
+router.get("/api/v1/check-code/:objectType/:code", checkCode);
 
 router.post("/api/v1/apply-promotion", getPromotion);
 
