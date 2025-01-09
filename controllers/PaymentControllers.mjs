@@ -147,6 +147,25 @@ const createPaymentZalo = async (req, res, next) => {
       dataPayment.paymentGatewayDetails.transactionId = apptransid;
       await dataPayment.save();
 
+      const mailOptions = {
+        from: "info@test.com",
+        to: dataPayment.payerDetails.email,
+        subject: `Booking ${dataBooking.objectType}`,
+        text: `Booking Code is ${dataPayment.paymentGatewayDetails.transactionId}`,
+      };
+
+      await transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          throw new Error("Error sending email");
+        } else {
+          console.log("Email sent: " + info.response);
+          return res.status(200).json({
+            message: "Payment created successfull",
+            data: vnpUrl,
+          });
+        }
+      });
+
       return res.status(200).json({
         message: "Payment created successfully",
         data: responseData,
@@ -327,6 +346,25 @@ const createPaymentVnpay = async (req, res, next) => {
     dataPayment.paymentGatewayDetails.provider = "VNPay";
     dataPayment.paymentGatewayDetails.transactionId = orderId;
     await dataPayment.save();
+
+    const mailOptions = {
+      from: "info@test.com",
+      to: dataPayment.payerDetails.email,
+      subject: `Booking ${dataBooking.objectType}`,
+      text: `Booking Code is ${dataPayment.paymentGatewayDetails.transactionId}`,
+    };
+
+    await transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        throw new Error("Error sending email");
+      } else {
+        console.log("Email sent: " + info.response);
+        return res.status(200).json({
+          message: "Payment created successfull",
+          data: vnpUrl,
+        });
+      }
+    });
 
     return res.status(200).json({
       message: "Payment created successfull",
