@@ -45,7 +45,9 @@ const getRoom = async (req, res, next) => {
 const getRoomByHotelId = async (req, res, next) => {
   try {
     const hotelId = req.query.hotelId;
+    console.log(hotelId);
     const rooms = await RoomModel.find().populate("hotelId");
+    console.log(rooms);
     const filterRooms = rooms.filter(
       (item) => item.hotelId._id.toString() === hotelId
     );
