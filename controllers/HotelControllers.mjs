@@ -198,11 +198,13 @@ const getHotelById = async (req, res, next) => {
     });
   }
 };
+
 const getHotelList = async (req, res, next) => {
   try {
     const hotels = await HotelModel.find()
-      .populate("roomId").populate("reviewId");
-      
+      .populate("roomId")
+      .populate("reviewId");
+
     return res.status(200).json({
       message: "Get all hotel successful",
       data: hotels,

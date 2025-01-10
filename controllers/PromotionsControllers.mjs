@@ -9,6 +9,24 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const getPromotionByObjectType = async (req, res, next) => {
+  try {
+    const objectType = req.params.objectType;
+    const promotion = await PromotionModel.find({
+      objectType: objectType,
+    }).populate("objectId");
+    return res.status(200).json({
+      message: "Get promotion",
+      data: promotion,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const getPromotion = async (req, res, next) => {
   try {
     const promotion = await PromotionModel.find().populate("objectId");
@@ -238,6 +256,7 @@ const editPromotion = async (req, res, next) => {
 };
 
 export {
+  getPromotionByObjectType,
   getPromotion,
   applyPromotion,
   deletePromotion,

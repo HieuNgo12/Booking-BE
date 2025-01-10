@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import {
+  getPromotionByObjectType,
   createPromotion,
   deletePromotion,
   editPromotion,
@@ -14,6 +15,8 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 router.get("/api/v1/get-promotion", getPromotion);
+
+router.get("/api/v1/get-promotion/:objectType", getPromotionByObjectType);
 
 router.get("/api/v1/check-code/:objectType/:code", checkCode);
 

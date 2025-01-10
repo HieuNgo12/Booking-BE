@@ -34,7 +34,9 @@ const hotelSchema = new mongoose.Schema(
       partialPayment: { type: Boolean, default: false },
       amountPayment: { type: String, default: null },
     },
-    reviewId: [{ type: mongoose.Schema.Types.ObjectId, ref: "review" }],
+    reviewId: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "review", default: [] },
+    ],
     bookingId: [{ type: mongoose.Schema.Types.ObjectId, ref: "booking" }],
     roomId: [{ type: mongoose.Schema.Types.ObjectId, ref: "room" }],
   },
