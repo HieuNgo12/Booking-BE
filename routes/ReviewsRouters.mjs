@@ -10,7 +10,7 @@ import {
   getAllReview,
   getReviewHotelId,
   getReviewTourId,
-  deleteReview
+  deleteReview,
 } from "../controllers/ReviewsControllers.mjs";
 
 const router = express.Router();
@@ -42,6 +42,12 @@ router.delete(
 router.get("/api/v1/get-reviews", validateToken, isLogInAdmin, getAllReview);
 
 //user
-router.post("/api/v1/create-review", validateToken, isLogInUser, createReview);
+router.post(
+  "/api/v1/create-review",
+  upload.single("file"),
+  validateToken,
+  isLogInUser,
+  createReview
+);
 
 export default router;

@@ -31,6 +31,7 @@ const bookingSchema = new mongoose.Schema(
     totalPersons: { type: Number, required: true },
     totalAmount: { type: Number, required: true },
     discount: { type: Number, default: 0 },
+    pinCode: { type: String },
     status: {
       type: String,
       enum: ["pending", "confirmed", "cancelled", "completed"],
@@ -50,6 +51,7 @@ const bookingSchema = new mongoose.Schema(
       },
     ],
     promotionId: { type: mongoose.Schema.Types.ObjectId, ref: "promotion" },
+    reviewId: { type: mongoose.Schema.Types.ObjectId, ref: "review" },
     bookingReference: { type: String },
     internalNotes: { type: String, default: null },
   },

@@ -83,6 +83,7 @@ const getBookingByUserId = async (req, res, next) => {
     const objectType = req.params.objectType;
     const getBooking = await BookingModel.find({ userId: userId })
       .populate("userId")
+      .populate("reviewId")
       .populate("objectId");
 
     const filterBooking = getBooking.filter(
@@ -247,6 +248,46 @@ const getBookingByBookingIdNoToken = async (req, res, next) => {
   }
 };
 
+const searchBooking = async (req, res, next) => {
+  try {
+    const { bookingId, pinCode, objectType } = req.params;
+
+    const getBooking = await BookingModel.findOne({
+      _id: bookingId,
+      pinCode: pinCode,
+      objectType: objectType,
+    })
+      .populate("userId")
+      .populate("objectId")
+      .populate("bookedRoomId");
+    // .populate({
+    //   path: "objectId",
+    //   populate: {
+    //     path: "room",
+    //     model: "room",
+    //   },
+    // });
+
+    if (!getBooking || getBooking.length === 0) {
+      return res.status(400).json({
+        message: "No bookings found for this booking",
+      });
+    }
+
+    if (getBooking) {
+      return res.status(200).json({
+        message: "Get booking successful",
+        data: getBooking,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const createBooking = async (req, res, next) => {
   try {
     // const userId = req.user.id;
@@ -357,4 +398,5 @@ export {
   getBooking,
   getBookingByBookingID,
   updateContact,
+  searchBooking,
 };

@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import otpGenerator from "otp-generator";
-
+import axios from "axios";
 import PaymentModel from "../models/PaymentModel.mjs";
 import CryptoJS from "crypto-js"; // npm install crypto-js
 import moment from "moment";
@@ -43,6 +43,11 @@ const configVnpay = {
   vnp_Url: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
   vnp_Api: "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction",
   vnp_ReturnUrl: "http://localhost:8888/order/vnpay_return",
+};
+
+const configMomo = {
+  accessKey: "F8BBA842ECF85",
+  secretKey: "K951B6PE1waDMi640xX08PD3vg6EkVlz",
 };
 
 const createPayment = async (req, res, next) => {
@@ -424,6 +429,125 @@ const vnpayReturn = async (req, res, next) => {
   }
 };
 
+const createPaymentMomo = async (req, res, next) => {
+  try {
+    const paymentId = req.paymentId;
+    const dataBooking = req.dataBooking;
+
+    const dataPayment = await PaymentModel.findById(paymentId);
+
+    var partnerCode = "MOMO";
+    var orderId = partnerCode + new Date().getTime();
+    var orderInfo = "Thanh toan cho ma GD:" + orderId;
+    var redirectUrl = `http://localhost:5173/${dataBooking.objectType}-confirm-page/${dataBooking._id}`;
+    var ipnUrl = "https://www.youtube.com/";
+    var requestType = "payWithMethod";
+    var amount = dataBooking.totalAmount;
+    var requestId = orderId;
+    var extraData = "";
+    var orderGroupId = "";
+    var autoCapture = true;
+    var lang = "vi";
+
+    var rawSignature =
+      "accessKey=" +
+      configMomo.accessKey +
+      "&amount=" +
+      amount +
+      "&extraData=" +
+      extraData +
+      "&ipnUrl=" +
+      ipnUrl +
+      "&orderId=" +
+      orderId +
+      "&orderInfo=" +
+      orderInfo +
+      "&partnerCode=" +
+      partnerCode +
+      "&redirectUrl=" +
+      redirectUrl +
+      "&requestId=" +
+      requestId +
+      "&requestType=" +
+      requestType;
+    console.log("--------------------RAW SIGNATURE----------------");
+    console.log(rawSignature);
+
+    var signature = crypto
+      .createHmac("sha256", configMomo.secretKey)
+      .update(rawSignature)
+      .digest("hex");
+    console.log("--------------------SIGNATURE----------------");
+    console.log(signature);
+
+    const requestBody = JSON.stringify({
+      partnerCode: partnerCode,
+      partnerName: "Test",
+      storeId: "MomoTestStore",
+      requestId: requestId,
+      amount: amount,
+      orderId: orderId,
+      orderInfo: orderInfo,
+      redirectUrl: redirectUrl,
+      ipnUrl: ipnUrl,
+      lang: lang,
+      requestType: requestType,
+      autoCapture: autoCapture,
+      extraData: extraData,
+      orderGroupId: orderGroupId,
+      signature: signature,
+    });
+
+    try {
+      const response = await axios.post(
+        "https://test-payment.momo.vn/v2/gateway/api/create",
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      dataPayment.paymentGatewayDetails.provider = "MOMO";
+      dataPayment.paymentGatewayDetails.transactionId = orderId;
+      await dataPayment.save();
+
+      const mailOptions = {
+        from: "info@test.com",
+        to: dataPayment.payerDetails.email,
+        subject: `Booking ${dataBooking.objectType}`,
+        text: `Booking Code is ${orderId}`,
+      };
+
+      await transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          throw new Error("Error sending email");
+        } else {
+          console.log("Email sent: " + info.response);
+          return res.status(200).json({
+            message: "Payment created successfull",
+            data: response.data.payUrl,
+          });
+        }
+      });
+
+      return res.status(200).json({
+        message: "Payment created successfull",
+        data: response.data.payUrl,
+      });
+    } catch (error) {
+      console.error(`Lỗi tạo thanh toán MoMo: ${error.message}`);
+      res.status(500).json({ message: "Không thể tạo thanh toán." });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 export {
   checkStatusFromZalo,
   getPaymentByUserId,
@@ -432,4 +556,5 @@ export {
   createPayment,
   createPaymentVnpay,
   vnpayReturn,
+  createPaymentMomo,
 };
