@@ -1,12 +1,9 @@
-import Review from "../models/ReviewsModel.mjs";
-
-const HotelReviewsControllers = () => {};
-export default HotelReviewsControllers;
 import { v2 as cloudinary } from "cloudinary";
 import ReviewModel from "../models/ReviewsModel.mjs";
 import HotelModel from "../models/HotelModel.mjs";
 import TourModel from "../models/TourModel.mjs";
-
+import mongoose from "mongoose";
+import BookingModel from "../models/BookingModel.mjs";
 //cloudary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -81,10 +78,20 @@ const getAllReview = async (req, res, next) => {
 const createReview = async (req, res, next) => {
   try {
     const review = await ReviewModel.create(req.body);
-    return res.status(200).json({
-      message: "Create review successfully",
-      data: review,
-    });
+    const getBooking = await BookingModel.findByIdAndUpdate(
+      req.body.bookingId,
+      {
+        reviewId: review._id,
+      },
+      { new: true }
+    );
+
+    if (getBooking) {
+      return res.status(200).json({
+        message: "Create review successfully",
+        data: review,
+      });
+    }
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",

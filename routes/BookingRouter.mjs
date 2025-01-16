@@ -8,6 +8,7 @@ import {
   getBooking,
   updateContact,
   createBooking,
+  searchBooking,
   getBookingByUserId,
   getBookingByBookingId,
   getBookingByBookingID,
@@ -70,6 +71,8 @@ router.get(
   // isLogInUser,
   getBookingByBookingIdNoToken
 );
+
+router.get("/api/v1/search-booking/:bookingId/:pinCode/:objectType", searchBooking);
 
 router.post(
   "/api/v1/create-booking",
