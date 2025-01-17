@@ -208,9 +208,28 @@ const updateProfile = async (req, res, next) => {
     }
 
     if (!file) {
-      const updateUser = await UserModel.findByIdAndUpdate(userId, dataUser);
+      const updateUser = await UserModel.findByIdAndUpdate(userId, dataUser, {
+        new: true,
+      });
 
       if (updateUser) {
+        const userDataAccessToken = {
+          id: updateUser._id,
+          email: updateUser.email,
+          firstName: updateUser.firstName,
+          lastName: updateUser.lastName,
+          avatar: updateUser.avatar,
+        };
+
+        const accessToken = jwt.sign(userDataAccessToken, process.env.KEY_JWT, {
+          expiresIn: "5m",
+        });
+
+        res.cookie("accessToken", accessToken, {
+          httpOnly: false,
+          path: "/",
+          maxAge: 5 * 60 * 1000,
+        });
         return res.status(200).json({
           message: "Update information successful!",
         });
@@ -241,9 +260,34 @@ const updateProfile = async (req, res, next) => {
             dataUser = { ...dataUser, avatar: result.secure_url };
             const updateAvatar = await UserModel.findByIdAndUpdate(
               userId,
-              dataUser
+              dataUser,
+              {
+                new: true,
+              }
             );
             if (updateAvatar) {
+              const userDataAccessToken = {
+                id: updateAvatar._id,
+                email: updateAvatar.email,
+                firstName: updateAvatar.firstName,
+                lastName: updateAvatar.lastName,
+                avatar: updateAvatar.avatar,
+              };
+
+              const accessToken = jwt.sign(
+                userDataAccessToken,
+                process.env.KEY_JWT,
+                {
+                  expiresIn: "5m",
+                }
+              );
+
+              res.cookie("accessToken", accessToken, {
+                httpOnly: false,
+                path: "/",
+                maxAge: 5 * 60 * 1000,
+              });
+
               return res.status(200).json({
                 message: "Update information successful!",
               });

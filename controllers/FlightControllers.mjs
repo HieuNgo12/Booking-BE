@@ -53,7 +53,9 @@ const getFlight = async (req, res, next) => {
 
 const getFlightById = async (req, res, next) => {
   try {
+    console.log(req.params.flightId);
     const getFlight = await FlightModel.findById(req.params.flightId);
+    console.log(getFlight);
     return res.status(200).json({
       message: "Get flight successful",
       data: getFlight,
@@ -120,7 +122,7 @@ const searchFlight = async (req, res, next) => {
       passengers,
       classFlight,
       departureDate,
-      destinationDate,
+      returnDate,
       trip,
     } = req.query;
 
@@ -142,16 +144,54 @@ const searchFlight = async (req, res, next) => {
       return departureDate === targetDate;
     });
 
-    if (!checkDepartureDate) {
-      return res.status(400).json({
+    if (checkDepartureDate.length === 0) {
+      return res.status(200).json({
         message: "Flight is not found!",
+        data: checkDepartureDate,
       });
     }
 
-    return res.status(200).json({
-      message: "Flight is found!",
-      data: checkDepartureDate,
-    });
+    if (trip === "one") {
+      return res.status(200).json({
+        message: "Flight is found!",
+        data: checkDepartureDate,
+      });
+    } else if (trip === "two") {
+      const checkAirportReturn = await FlightModel.find({
+        departureAirport: destinationAirport,
+        destinationAirport: departureAirport,
+      });
+
+      const checkClassFlightReturn = checkAirportReturn.filter((flight) =>
+        flight.classFlight.some(
+          (item) => item.type === classFlight && item.seats >= passengers
+        )
+      );
+
+      const dateObjectReturn = new Date(returnDate);
+
+      const checkReturnDate = checkClassFlightReturn.filter((item) => {
+        const returnDate = item.departureDate.toISOString().split("T")[0];
+        const targetDate = dateObjectReturn.toISOString().split("T")[0];
+        return returnDate === targetDate;
+      });
+
+      const newArr = checkDepartureDate.map((item) => {
+        const loop1 = checkReturnDate.filter(
+          (item2) => item2.airlineName === item.airlineName
+        );
+        return {
+          ...item._doc,
+          returnInfo: loop1,
+        };
+      });
+
+      console.log(newArr);
+      return res.status(200).json({
+        message: "Flight is found!",
+        data: newArr,
+      });
+    }
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",

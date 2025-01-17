@@ -31,6 +31,48 @@ const getAllSupport = async (req, res, next) => {
   }
 };
 
+const getSupportByUserId = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const test = mongoose.Types.ObjectId(userId);
+    console.log(test);
+    const support = await SupportModel.find({ userId: test })
+      .populate("userId")
+      .populate("adminId");
+
+    console.log(support);
+    return res.status(200).json({
+      message: "Get support successfuly",
+      data: support,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const getSupportBySupportId = async (req, res, next) => {
+  try {
+    const supportId = req.params.supportId;
+    const support = await SupportModel.findById(supportId)
+      .populate("userId")
+      .populate("adminId");
+
+    console.log(support);
+    return res.status(200).json({
+      message: "Get support successfuly",
+      data: support,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const replySupport = async (req, res, next) => {
   try {
     let { messageReply, subject } = req.body;
@@ -142,4 +184,9 @@ const replySupport = async (req, res, next) => {
   }
 };
 
-export { getAllSupport, replySupport };
+export {
+  getAllSupport,
+  replySupport,
+  getSupportByUserId,
+  getSupportBySupportId,
+};

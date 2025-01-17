@@ -7,6 +7,7 @@ import {
   createPayment,
   createPaymentVnpay,
   vnpayReturn,
+  createPaymentMomo,
 } from "../controllers/PaymentControllers.mjs";
 import { isLogInUser, validateToken } from "../middleware/validate.mjs";
 
@@ -62,6 +63,14 @@ router.get(
   // validateToken,
   // isLogInUser,
   vnpayReturn
+);
+
+router.post(
+  "/api/v1/create-payment-momo/:bookingId",
+  // validateToken,
+  // isLogInUser,
+  createPayment,
+  createPaymentMomo
 );
 
 export default router;

@@ -8,12 +8,14 @@ import {
   getBooking,
   updateContact,
   createBooking,
+  searchBooking,
   getBookingByUserId,
   getBookingByBookingId,
   getBookingByBookingID,
   adminGetBookingByUserId,
   adminGetBookingByRoomId,
   adminGetBookingByBookingId,
+  getBookingByBookingIdNoToken,
 } from "../controllers/BookingControllers.mjs";
 const router = express.Router();
 
@@ -63,6 +65,15 @@ router.get(
   getBookingByBookingId
 );
 
+router.get(
+  "/api/v1/get-booking-no-token/:bookingId",
+  // validateToken,
+  // isLogInUser,
+  getBookingByBookingIdNoToken
+);
+
+router.get("/api/v1/search-booking/:bookingId/:pinCode/:objectType", searchBooking);
+
 router.post(
   "/api/v1/create-booking",
   // validateToken,
@@ -70,6 +81,5 @@ router.post(
   createBooking
 );
 router.get("/api/v1/getBookingById/:bookingId", getBookingByBookingID);
-
 
 export default router;

@@ -1,12 +1,9 @@
-import Review from "../models/ReviewsModel.mjs";
-
-const HotelReviewsControllers = () => {};
-export default HotelReviewsControllers;
 import { v2 as cloudinary } from "cloudinary";
 import ReviewModel from "../models/ReviewsModel.mjs";
 import HotelModel from "../models/HotelModel.mjs";
 import TourModel from "../models/TourModel.mjs";
-
+import mongoose from "mongoose";
+import BookingModel from "../models/BookingModel.mjs";
 //cloudary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

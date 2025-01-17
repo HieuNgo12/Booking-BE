@@ -203,6 +203,7 @@ const getHotelById = async (req, res, next) => {
     });
   }
 };
+
 const getHotelList = async (req, res, next) => {
   try {
     console.log(req.body);
