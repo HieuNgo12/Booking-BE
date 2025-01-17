@@ -74,3 +74,4 @@ const App = async () => {
 
 const app = await App();
 export const handler = Serverless(app);
+export default app;
