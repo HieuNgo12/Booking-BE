@@ -273,7 +273,7 @@ const createPaymentVnpay = async (req, res, next) => {
     const dataBooking = req.dataBooking;
 
     const dataPayment = await PaymentModel.findById(paymentId);
-
+  
     process.env.TZ = "Asia/Ho_Chi_Minh";
 
     let date = new Date();

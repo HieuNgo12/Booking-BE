@@ -67,5 +67,13 @@ router.post(
   "/api/v1/getHotelListByQuery",
   getHotelListByQuery
 );
+router.post(
+  "/api/v1/create-hotel-backup",
+  // upload.fields([
+  //   { name: "avatar", maxCount: 1 }, // Một avatar bắt buộc
+  //   { name: "arrImg", maxCount: 10 }, // Mảng file tùy ý (tối đa 10 file)
+  // ]),
+  addHotel
+);
 
 export default router;

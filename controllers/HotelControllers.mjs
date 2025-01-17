@@ -253,6 +253,26 @@ const getHotelListByQuery = async (req, res, next) => {
     });
   }
 };
+const getMinPrice = async (req, res, next) => {
+  try {
+    console.log(req.body);
+    const page = req.body.page;
+    const query = req.body.query;
+    const hotels = await HotelModel.find({
+      // "address.city":  req.body.place ,
+    });
+
+    return res.status(200).json({
+      message: "Get all hotel successful",
+      data: hotels,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
 export {
   searchHotel,
   addHotel,

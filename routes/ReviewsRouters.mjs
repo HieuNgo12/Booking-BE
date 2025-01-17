@@ -43,5 +43,6 @@ router.get("/api/v1/get-reviews", validateToken, isLogInAdmin, getAllReview);
 
 //user
 router.post("/api/v1/create-review", validateToken, isLogInUser, createReview);
+router.post("/api/v1/create-review-without-authen",  createReview);
 
 export default router;
