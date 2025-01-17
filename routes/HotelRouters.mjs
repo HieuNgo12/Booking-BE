@@ -9,6 +9,7 @@ import {
   deleteHotel,
   getHotelById,
   getHotelList,
+  getHotelListByQuery,
 } from "../controllers/HotelControllers.mjs";
 import { isLogInAdmin, validateToken } from "../middleware/validate.mjs";
 
@@ -58,9 +59,21 @@ router.get(
   "/api/v1/hotel/:hotelId",
   getHotelById
 );
-router.get(
+router.post(
   "/api/v1/getHotelList",
   getHotelList
+);
+router.post(
+  "/api/v1/getHotelListByQuery",
+  getHotelListByQuery
+);
+router.post(
+  "/api/v1/create-hotel-backup",
+  // upload.fields([
+  //   { name: "avatar", maxCount: 1 }, // Một avatar bắt buộc
+  //   { name: "arrImg", maxCount: 10 }, // Mảng file tùy ý (tối đa 10 file)
+  // ]),
+  addHotel
 );
 
 export default router;

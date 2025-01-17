@@ -78,20 +78,20 @@ const getAllReview = async (req, res, next) => {
 const createReview = async (req, res, next) => {
   try {
     const review = await ReviewModel.create(req.body);
-    const getBooking = await BookingModel.findByIdAndUpdate(
-      req.body.bookingId,
-      {
-        reviewId: review._id,
-      },
-      { new: true }
+    const hotel = await HotelModel.findByIdAndUpdate(
+      req.body.objectId,
+      { $push: { reviewId: review._id } },
+      { new: true},
+      function (err, managerparent) {
+        if (err) throw err;
+        console.log(managerparent);
+      }
     );
-
-    if (getBooking) {
-      return res.status(200).json({
-        message: "Create review successfully",
-        data: review,
-      });
-    }
+    console.log(hotel);
+    return res.status(200).json({
+      message: "Create review successfully",
+      data: review,
+    });
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",
