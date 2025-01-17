@@ -42,6 +42,8 @@ const App = async () => {
   app.use(morgan("dev"));
   app.use(cors(corsConfig));
 
+  app.options("*", cors(corsConfig));
+  
   app.use(
     morgan(":method :url :status :res[content-length] - :response-time ms")
   );
