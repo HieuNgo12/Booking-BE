@@ -55,25 +55,11 @@ router.delete(
   isLogInAdmin,
   deleteHotel
 );
-router.get(
-  "/api/v1/hotel/:hotelId",
-  getHotelById
-);
-router.post(
-  "/api/v1/getHotelList",
-  getHotelList
-);
-router.post(
-  "/api/v1/getHotelListByQuery",
-  getHotelListByQuery
-);
-router.post(
-  "/api/v1/create-hotel-backup",
-  // upload.fields([
-  //   { name: "avatar", maxCount: 1 }, // Một avatar bắt buộc
-  //   { name: "arrImg", maxCount: 10 }, // Mảng file tùy ý (tối đa 10 file)
-  // ]),
-  addHotel
-);
+
+router.get("/api/v1/hotel/:hotelId", getHotelById);
+
+router.post("/api/v1/getHotelList", getHotelList);
+
+router.post("/api/v1/getHotelListByQuery", getHotelListByQuery);
 
 export default router;
