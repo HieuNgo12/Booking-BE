@@ -27,6 +27,7 @@ const corsConfig = {
     "http://localhost:5173",
     "http://localhost:3000",
     "https://booking-admin-fe.onrender.com",
+    "https://booking-mindxtc.netlify.app",
   ],
   methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -69,7 +70,7 @@ const App = async () => {
   if (process.env.NODE_ENV === "dev") {
     app.listen(3000, () => {
       console.log(
-        `Server is running on port 8080. Check the app on http://localhost:3000`
+        `Server is running on port 3000. Check the app on http://localhost:3000`
       );
     });
   }
