@@ -64,7 +64,7 @@ const App = async () => {
   if (process.env.NODE_ENV === "dev") {
     app.listen(8080, () => {
       console.log(
-        `Server is running on port 8080. Check the app on http://localhost:8080`
+        `Server is running on port 8080. Check the app on http://localhost:3000`
       );
     });
   }
