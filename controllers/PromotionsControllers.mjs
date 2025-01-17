@@ -1,4 +1,8 @@
 import PromotionModel from "../models/PromotionsModel.mjs";
+
+const PromotionsControllers = {};
+
+export default PromotionsControllers;
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 
@@ -163,12 +167,14 @@ const createPromotion = async (req, res, next) => {
 
 const applyPromotion = async (req, res, next) => {
   try {
-    const { code } = res.body;
+    const { code } = req.body;
 
-    const promotion = await PromotionModel.findOne({ code: code }).populate(
-      "objectId"
-    );
+    const promotion = await PromotionModel.findOne({
+      code: code,
+      status: "active",
+    }).populate("objectId");
 
+    console.log(promotion);
     if (!promotion) {
       return res.status(400).json({
         message: "Code is not found!",
@@ -182,9 +188,12 @@ const applyPromotion = async (req, res, next) => {
         message: "Code is expired!",
       });
     }
-
+    const updatePromotion = await PromotionModel.updateOne({
+      code: code,
+      status: "inactive",
+    }).populate("objectId");
     return res.status(200).json({
-      message: "Get all promotion",
+      message: "Apply Promotion Successfully",
       data: promotion,
     });
   } catch (error) {
@@ -254,7 +263,28 @@ const editPromotion = async (req, res, next) => {
     });
   }
 };
-
+const applyPromoCode = async (req, res) => {
+  try {
+    const data = await PromotionModel.findOne({ code: req.body.code });
+    console.log(data);
+    if (data?.length) {
+      res.status(200).json({
+        message: "Apply Promo Successfully",
+        data: data,
+      });
+    } else {
+      res.status(400).json({
+        message: "Promo Not available",
+        data: data,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
 export {
   getPromotionByObjectType,
   getPromotion,
@@ -262,5 +292,6 @@ export {
   deletePromotion,
   createPromotion,
   editPromotion,
+  applyPromoCode,
   checkCode,
 };

@@ -52,7 +52,7 @@ const getHotel = async (req, res, next) => {
 
 const getAllHotel = async (req, res, next) => {
   try {
-    const hotels = await HotelModel.find();
+    const hotels = await HotelModel.find({});
     return res.status(200).json({
       message: "Get all hotel successful",
       data: hotels,
@@ -186,7 +186,12 @@ const getHotelById = async (req, res, next) => {
   try {
     const hotel = await HotelModel.findOne({
       _id: req.params.hotelId,
-    }).populate("roomId");
+    })
+      .populate("roomId")
+      .populate({
+        path: "reviewId",
+        populate: [{ path: "userId" }],
+      });
     return res.status(200).json({
       message: "Get hotel successful",
       data: hotel,
@@ -201,9 +206,62 @@ const getHotelById = async (req, res, next) => {
 
 const getHotelList = async (req, res, next) => {
   try {
-    const hotels = await HotelModel.find()
+    console.log(req.body);
+    const page = req.body.page;
+    const query = req.body.query;
+    const hotels = await HotelModel.find({
+      // "address.city":  req.body.place ,
+    });
+
+    return res.status(200).json({
+      message: "Get all hotel successful",
+      data: hotels,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const getHotelListByQuery = async (req, res, next) => {
+  try {
+    console.log(req.body);
+    const page = req.body.page;
+    const limit = req.body.limit;
+    const place = req.body.place;
+    const bodyQuery = place
+      ? { hotelName: { $regex: place, $options: "i" } }
+      : {};
+    const hotels = await HotelModel.find(bodyQuery)
       .populate("roomId")
-      .populate("reviewId");
+      .populate("reviewId")
+      .sort({
+        createdAt: -1,
+      })
+      .limit(limit)
+      .skip(limit * page);
+
+    return res.status(200).json({
+      message: "Get all hotel successful",
+      data: hotels,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+const getMinPrice = async (req, res, next) => {
+  try {
+    console.log(req.body);
+    const page = req.body.page;
+    const query = req.body.query;
+    const hotels = await HotelModel.find({
+      // "address.city":  req.body.place ,
+    });
 
     return res.status(200).json({
       message: "Get all hotel successful",
@@ -225,4 +283,5 @@ export {
   deleteHotel,
   getHotelById,
   getHotelList,
+  getHotelListByQuery,
 };
