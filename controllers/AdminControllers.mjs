@@ -230,16 +230,16 @@ const logIn = async (req, res, next) => {
       res.cookie("accessToken", accessToken, {
         httpOnly: false,
         path: "/",
-        // secure: false,
-        // sameSite: "None",
+        secure: false,
+        sameSite: "None",
         maxAge: 5 * 60 * 1000,
       });
 
       res.cookie("refreshToken", refreshToken, {
         httpOnly: false,
         path: "/",
-        // secure: false,
-        // sameSite: "None",
+        secure: false,
+        sameSite: "None",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
