@@ -231,7 +231,7 @@ const logIn = async (req, res, next) => {
         httpOnly: false,
         path: "/",
         secure: false,
-        sameSite: "None",
+        // sameSite: "None",
         maxAge: 5 * 60 * 1000,
       });
 
@@ -239,7 +239,7 @@ const logIn = async (req, res, next) => {
         httpOnly: false,
         path: "/",
         secure: false,
-        sameSite: "None",
+        // sameSite: "None",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
