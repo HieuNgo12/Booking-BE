@@ -26,6 +26,7 @@ const corsConfig = {
   origin: [
     "http://localhost:5173",
     "http://localhost:3000",
+    "http://localhost:3030",
     "https://booking-admin-fe.onrender.com",
     "https://booking-mindxtc.netlify.app",
   ],
