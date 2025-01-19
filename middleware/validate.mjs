@@ -85,7 +85,6 @@ const validateToken = async (req, res, next) => {
             message: "Unauthorized - Invalid or expired token",
           });
         } else {
-          console.log("check");
           req.user = decoded;
           next();
         }
@@ -99,41 +98,79 @@ const validateToken = async (req, res, next) => {
   }
 };
 
+// const refreshToken = async (req, res, next) => {
+//   try {
+//     const refreshToken = req.cookies.refreshToken;
+//     const decoded = jwtDecode(refreshToken);
+//     const checkInfo = await UserModel.findById(decoded.id);
+
+//     if (!checkInfo) {
+//       return res.status(400).json({
+//         message: "User is not found! Please log in again!",
+//       });
+//     }
+
+//     const newToken = jwt.sign(
+//       {
+//         id: checkInfo.id,
+//         email: checkInfo.email,
+//         avatar: checkInfo.avatar,
+//         firstName: checkInfo.firstName,
+//         lastName: checkInfo.lastName,
+//       },
+//       process.env.KEY_JWT,
+//       {
+//         expiresIn: "5m",
+//       }
+//     );
+
+//     res.cookie("accessToken", newToken, {
+//       httpOnly: false,
+//       path: "/",
+//       // secure: false,
+//       // sameSite: "None",
+//       maxAge: 5 * 60 * 1000,
+//     });
+
+//     return res.status(200).json({ accessToken: newToken });
+//   } catch (error) {
+//     return res.status(500).json({
+//       message: "Internal Server Error",
+//       error: error.message,
+//     });
+//   }
+// };
+
 const refreshToken = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
-    const decoded = jwtDecode(refreshToken);
-    const checkInfo = await UserModel.findById(decoded.id);
+    const authHeader = req.headers["authorization"];
+    if (authHeader) {
+      const refreshToken = authHeader.split(" ")[1]; // Tách access token từ chuỗi "Bearer {access_token}"
+      const decoded = jwtDecode(refreshToken);
+      const checkInfo = await UserModel.findById(decoded.id);
 
-    if (!checkInfo) {
-      return res.status(400).json({
-        message: "User is not found! Please log in again!",
-      });
-    }
-
-    const newToken = jwt.sign(
-      {
-        id: checkInfo.id,
-        email: checkInfo.email,
-        avatar: checkInfo.avatar,
-        firstName: checkInfo.firstName,
-        lastName: checkInfo.lastName,
-      },
-      process.env.KEY_JWT,
-      {
-        expiresIn: "5m",
+      if (!checkInfo) {
+        return res.status(400).json({
+          message: "User is not found! Please log in again!",
+        });
       }
-    );
 
-    res.cookie("accessToken", newToken, {
-      httpOnly: false,
-      path: "/",
-      // secure: false,
-      // sameSite: "None",
-      maxAge: 5 * 60 * 1000,
-    });
+      const newToken = jwt.sign(
+        {
+          id: checkInfo.id,
+          email: checkInfo.email,
+          firstName: checkInfo.firstName,
+          lastName: checkInfo.lastName,
+          avatar: checkInfo.avatar,
+        },
+        process.env.KEY_JWT,
+        {
+          expiresIn: "5m",
+        }
+      );
 
-    return res.status(200).json({ accessToken: newToken });
+      return res.status(200).json({ accessToken: newToken });
+    }
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",
@@ -191,7 +228,6 @@ const refreshTokenAdmin = async (req, res, next) => {
     const authHeader = req.headers["authorization"];
     if (authHeader) {
       const refreshToken = authHeader.split(" ")[1]; // Tách access token từ chuỗi "Bearer {access_token}"
-      console.log(refreshToken);
       const decoded = jwtDecode(refreshToken);
       const checkInfo = await AdminModel.findById(decoded.id);
 

@@ -121,6 +121,11 @@ const editTour = async (req, res, next) => {
 
 const searchTour = async (req, res) => {
   try {
+    console.log("Received endDestination:", req.query.endDestination);
+    console.log(
+      "Received transportationMethod:",
+      req.query.transportationMethod
+    );
     const query = {};
 
     if (req.query.endDestination) {
@@ -139,8 +144,9 @@ const searchTour = async (req, res) => {
     }
 
     if (req.query.transportationMethod) {
+      //console.log("Query transportationMethod condition:", req.query.transportationMethod);
       query.transportationMethod = {
-        $eq: req.query.transportationMethod[0],
+        $eq: req.query.transportationMethod,
       };
     }
 
@@ -151,7 +157,7 @@ const searchTour = async (req, res) => {
       );
     }
 
-    //console.log("Mongo query:", query);
+    console.log("Mongo query:", query);
 
     const pageSize = 5;
     const pageNumber = parseInt(req.query.page || "1");
@@ -160,12 +166,7 @@ const searchTour = async (req, res) => {
     const tours = await TourModel.find(query).skip(skip).limit(pageSize);
 
     const total = await TourModel.countDocuments(query);
-    console.log("Tours data:", tours);
-    console.log("Pagination:", {
-      total,
-      page: pageNumber,
-      pages: Math.ceil(total / pageSize),
-    });
+    //console.log("Tours data:", tours);
 
     res.json({
       data: tours,
