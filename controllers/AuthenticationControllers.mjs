@@ -634,10 +634,11 @@ const forgotPassword = async (req, res, next) => {
       purpose: "resetPassword",
     });
 
-    if (checkResent) {
+    if (checkOTP) {
       const currentDate = new Date();
       const MAX_TIME = 5 * 60 * 1000;
-      if (currentDate - checkResent.createAt < MAX_TIME) {
+
+      if (currentDate - checkOTP.createdAt < MAX_TIME) {
         const mailOptions = {
           from: "info@test.com",
           to: email,
@@ -656,8 +657,41 @@ const forgotPassword = async (req, res, next) => {
           }
         });
       } else {
-        return res.status(400).json({
-          message: "OTP is expired! Pleaes take a new OTP",
+        const otp = otpGenerator.generate(6, {
+          digits: true,
+          lowerCaseAlphabets: false,
+          upperCaseAlphabets: false,
+          specialChars: false,
+        });
+
+        const createOtp = await OtpModel.create({
+          email: email,
+          otp: otp,
+          purpose: "resetPassword",
+        });
+
+        if (!createOtp) {
+          return res.status(400).json({
+            message: "Create OTP failed! Please try it again!",
+          });
+        }
+
+        const mailOptions = {
+          from: "info@test.com",
+          to: email,
+          subject: "Your OTP Code",
+          text: `Otp to reset password is: ${otp}`,
+        };
+
+        await transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            throw new Error("Error sending email");
+          } else {
+            console.log("Email sent: " + info.response);
+            return res.status(200).json({
+              message: "OTP is sent successful!",
+            });
+          }
         });
       }
     }
