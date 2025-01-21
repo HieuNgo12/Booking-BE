@@ -790,8 +790,54 @@ const verifyEmail = async (req, res, next) => {
           throw new Error("Error sending email");
         } else {
           console.log("Email sent: " + info.response);
+          const userDataAccessToken = {
+            id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatar: user.avatar,
+          };
+
+          const userDataRefreshToken = {
+            id: user._id,
+          };
+
+          const accessToken = jwt.sign(
+            userDataAccessToken,
+            process.env.KEY_JWT,
+            {
+              expiresIn: "5m",
+            }
+          );
+
+          const refreshToken = jwt.sign(
+            userDataRefreshToken,
+            process.env.KEY_JWT,
+            {
+              expiresIn: "1h",
+            }
+          );
+
+          res.cookie("accessToken", accessToken, {
+            httpOnly: false,
+            path: "/",
+            // secure: false,
+            // sameSite: "None",
+            maxAge: 5 * 60 * 1000,
+          });
+
+          res.cookie("refreshToken", refreshToken, {
+            httpOnly: false,
+            path: "/",
+            // secure: false,
+            // sameSite: "None",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+          });
+
           return res.status(200).json({
-            message: "Your email is verify!",
+            message: "Log in successful!",
+            accessToken: accessToken,
+            refreshToken: refreshToken,
           });
         }
       });
